@@ -1,0 +1,26 @@
+{
+  "name": "yox-dom",
+  "version": "0.0.1",
+  "description": "dom api for Yox.js",
+  "main": "index.ts",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoxjs/yox-dom.git"
+  },
+  "keywords": [],
+  "author": "musicode",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yoxjs/yox-dom/issues"
+  },
+  "homepage": "https://github.com/yoxjs/yox-dom#readme",
+  "dependencies": {
+    "yox-common": "0.18.6",
+    "yox-config": "^0.1.5",
+    "yox-type": "0.0.18"
+  }
+}
