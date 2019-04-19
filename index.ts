@@ -219,7 +219,7 @@ domApi: API = {
     return array.toArray(node.childNodes)
   },
 
-  text(node: HTMLElement, content?: string): string | void {
+  text(node: Node, content?: string): string | void {
     if (isDef(content)) {
       node.textContent = content
     }
