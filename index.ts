@@ -129,10 +129,6 @@ domApi: API = {
     return event
   },
 
-  isElement(node: Node): boolean {
-    return node.nodeType === 1
-  },
-
   prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
     if (isDef(value)) {
       object.set(node, name, value, env.FALSE)
@@ -208,15 +204,10 @@ domApi: API = {
     return findElement(selector, context)
   },
 
-  tag(node: HTMLElement): string {
-    const { tagName } = node
-    return string.falsy(tagName)
-      ? env.EMPTY_STRING
-      : tagName.toLowerCase()
-  },
-
-  children(node: Node): Node[] {
-    return array.toArray(node.childNodes)
+  tag(node: Node): string | void {
+    if (node.nodeType === 1) {
+      return (node as HTMLElement).tagName.toLowerCase()
+    }
   },
 
   text(node: Node, content?: string): string | void {
