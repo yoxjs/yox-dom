@@ -40,17 +40,14 @@ if (doc) {
       node.detachEvent(`on${type}`, listener)
     }
   }
-  if (doc.querySelector) {
-    findElement = function (selector: string, context?: HTMLElement) {
-      return (doc || context).querySelector(selector)
-    }
-  }
-  else {
-    findElement = function (selector: string) {
-      // 去掉 #
-      return doc.getElementById(string.slice(selector, 1))
-    }
-  }
+  findElement = doc.querySelector
+    ? function (selector: string) {
+        return doc.querySelector(selector)
+      }
+    : function (selector: string) {
+        // 去掉 #
+        return doc.getElementById(string.slice(selector, 1))
+      }
 }
 
 const CHAR_WHITESPACE = ' ',
@@ -200,8 +197,8 @@ domApi: API = {
     return node.nextSibling
   },
 
-  find(selector: string, context?: HTMLElement): HTMLElement | void {
-    return findElement(selector, context)
+  find(selector: string): HTMLElement | void {
+    return findElement(selector)
   },
 
   tag(node: Node): string | void {
@@ -291,7 +288,7 @@ domApi: API = {
     emitter.on(
       type,
       {
-        func: listener,
+        fn: listener,
         ctx: context,
       }
     )
