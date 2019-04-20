@@ -175,12 +175,7 @@ domApi: API = {
   },
 
   before(parentNode: Node, newNode: Node, referenceNode: Node): void {
-    if (referenceNode) {
-      parentNode.insertBefore(newNode, referenceNode)
-    }
-    else {
-      domApi.append(parentNode, newNode)
-    }
+    parentNode.insertBefore(newNode, referenceNode)
   },
 
   append(parentNode: Node, node: Node): void {
