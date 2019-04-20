@@ -1,7 +1,8 @@
-import * as config from 'yox-config'
+import * as config from 'yox-config/index'
 
 import isDef from 'yox-common/src/function/isDef'
 
+import * as is from 'yox-common/src/util/is'
 import * as env from 'yox-common/src/util/env'
 import * as array from 'yox-common/src/util/array'
 import * as string from 'yox-common/src/util/string'
@@ -13,7 +14,7 @@ import CustomEvent from 'yox-common/src/util/Event'
 import API from 'yox-type/src/API'
 import SpecialEvent from 'yox-type/src/SpecialEvent'
 
-import * as signature from 'yox-type'
+import * as signature from 'yox-type/index'
 
 
 let doc = env.doc,
@@ -43,11 +44,11 @@ if (doc) {
   }
   findElement = doc.querySelector
     ? function (selector: string) {
-        return doc.querySelector(selector)
+        return (doc as Document).querySelector(selector)
       }
     : function (selector: string) {
         // 去掉 #
-        return doc.getElementById(string.slice(selector, 1))
+        return (doc as Document).getElementById(string.slice(selector, 1))
       }
 }
 
@@ -109,18 +110,18 @@ specialEvents: Record<string, SpecialEvent> = {
 
 domApi: API = {
 
-  createElement(tag: string, isSvg?: boolean): HTMLElement {
+  createElement(tag: string, isSvg?: boolean): Element {
     return isSvg
-      ? doc.createElementNS(namespaces.svg, tag)
-      : doc.createElement(tag)
+      ? (doc as Document).createElementNS(namespaces.svg, tag)
+      : (doc as Document).createElement(tag)
   },
 
   createText(text: string): Text {
-    return doc.createTextNode(text)
+    return (doc as Document).createTextNode(text)
   },
 
   createComment(text: string): Comment {
-    return doc.createComment(text)
+    return (doc as Document).createComment(text)
   },
 
   createEvent(event: any, node: HTMLElement): any {
@@ -149,10 +150,14 @@ domApi: API = {
 
   attr(node: HTMLElement, name: string, value?: string): string | void {
     if (isDef(value)) {
-      node.setAttribute(name, value)
+      node.setAttribute(name, value as string)
     }
     else {
-      return node.getAttribute(name)
+      // value 还可能是 null
+      const value = node.getAttribute(name)
+      if (value != env.NULL) {
+        return value
+      }
     }
   },
 
@@ -190,12 +195,18 @@ domApi: API = {
     parentNode.removeChild(node)
   },
 
-  parent(node: Node): Node {
-    return node.parentNode
+  parent(node: Node): Node | void {
+    const { parentNode } = node
+    if (parentNode) {
+      return parentNode
+    }
   },
 
-  next(node: Node): Node {
-    return node.nextSibling
+  next(node: Node): Node | void {
+    const { nextSibling } = node
+    if (nextSibling) {
+      return nextSibling
+    }
   },
 
   find(selector: string): HTMLElement | void {
@@ -210,16 +221,19 @@ domApi: API = {
 
   text(node: Node, content?: string): string | void {
     if (isDef(content)) {
-      node.textContent = content
+      node.textContent = content as string
     }
     else {
-      return node.textContent
+      const { textContent } = node
+      if (is.string(textContent)) {
+        return textContent as string
+      }
     }
   },
 
   html(node: HTMLElement, content?: string): string | void {
     if (isDef(content)) {
-      node.innerHTML = content
+      node.innerHTML = content as string
     }
     else {
       return node.innerHTML
@@ -305,7 +319,7 @@ domApi: API = {
     emitter.off(type, listener)
 
     // 如果注册的 type 事件都解绑了，则去掉原生监听器
-    if (!emitter.has(type)) {
+    if (nativeListeners && !emitter.has(type)) {
 
       const special = specialEvents[type],
 
@@ -318,7 +332,7 @@ domApi: API = {
         removeEventListener(node, type, nativeListener)
       }
 
-      nativeListeners[type] = env.UNDEFINED
+      delete nativeListeners[type]
 
     }
 
