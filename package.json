@@ -1,12 +1,9 @@
 {
   "name": "yox-dom",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "dom api for Yox.js",
-  "main": "index.ts",
-  "directories": {
-    "example": "example",
-    "test": "test"
-  },
+  "main": "index.js",
+  "directories": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yoxjs/yox-dom.git"
@@ -19,8 +16,8 @@
   },
   "homepage": "https://github.com/yoxjs/yox-dom#readme",
   "dependencies": {
-    "yox-common": "^0.18.8",
-    "yox-config": "0.1.5",
-    "yox-type": "^0.0.24"
+    "yox-common": "^0.18.9",
+    "yox-config": "^0.1.6",
+    "yox-type": "^0.0.26"
   }
 }

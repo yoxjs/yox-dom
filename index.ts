@@ -1,18 +1,19 @@
 import * as config from 'yox-config'
 
-import isDef from 'yox-common/function/isDef'
+import isDef from 'yox-common/src/function/isDef'
 
-import * as env from 'yox-common/util/env'
-import * as array from 'yox-common/util/array'
-import * as string from 'yox-common/util/string'
-import * as object from 'yox-common/util/object'
+import * as env from 'yox-common/src/util/env'
+import * as array from 'yox-common/src/util/array'
+import * as string from 'yox-common/src/util/string'
+import * as object from 'yox-common/src/util/object'
 
-import Emitter from 'yox-common/util/Emitter'
-import CustomEvent from 'yox-common/util/Event'
+import Emitter from 'yox-common/src/util/Emitter'
+import CustomEvent from 'yox-common/src/util/Event'
 
 import API from 'yox-type/src/API'
 import SpecialEvent from 'yox-type/src/SpecialEvent'
-import * as signature from 'yox-type/src/type'
+
+import * as signature from 'yox-type'
 
 
 let doc = env.doc,
