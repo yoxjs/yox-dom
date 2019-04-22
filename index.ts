@@ -165,15 +165,6 @@ domApi: API = {
     node.removeAttribute(name)
   },
 
-  data(node: HTMLElement, name: string, value?: string): string | void {
-    // 不用 dataset，因为 removeData 时不好处理，这样反而还少了兼容问题
-    return domApi.attr(node, `data-${string.hyphenate(name)}`, value)
-  },
-
-  removeData(node: HTMLElement, name: string): void {
-    domApi.removeAttr(node, `data-${string.hyphenate(name)}`)
-  },
-
   before(parentNode: Node, newNode: Node, referenceNode: Node): void {
     parentNode.insertBefore(newNode, referenceNode)
   },
