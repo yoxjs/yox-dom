@@ -2,7 +2,6 @@ import * as config from 'yox-config/index'
 
 import isDef from 'yox-common/src/function/isDef'
 
-import * as is from 'yox-common/src/util/is'
 import * as env from 'yox-common/src/util/env'
 import * as array from 'yox-common/src/util/array'
 import * as string from 'yox-common/src/util/string'
@@ -16,15 +15,14 @@ import SpecialEvent from 'yox-type/src/SpecialEvent'
 
 import * as signature from 'yox-type/index'
 
-
 let doc = env.doc,
 
 // textContent 不兼容 IE 678
 innerText = 'textContent',
 
-addEventListener: Function = env.EMPTY_FUNCTION,
+addEventListener: (node: HTMLElement, type: string, listener: (event: Event) => void) => void = env.EMPTY_FUNCTION,
 
-removeEventListener: Function = env.EMPTY_FUNCTION,
+removeEventListener: (node: HTMLElement, type: string, listener: (event: Event) => void) => void = env.EMPTY_FUNCTION,
 
 addClass: (node: HTMLElement, className: string) => void = env.EMPTY_FUNCTION,
 
@@ -53,22 +51,22 @@ if (doc) {
     }
   }
   if (doc.body.classList) {
-    addClass = function (node: HTMLElement, className: string): void {
+    addClass = function (node: HTMLElement, className: string) {
       node.classList.add(className)
     }
-    removeClass = function (node: HTMLElement, className: string): void {
+    removeClass = function (node: HTMLElement, className: string) {
       node.classList.remove(className)
     }
   }
   else {
-    addClass = function (node: HTMLElement, className: string): void {
+    addClass = function (node: HTMLElement, className: string) {
       const classes = node.className.split(CHAR_WHITESPACE)
       if (!array.has(classes, className)) {
         array.push(classes, className)
         node.className = array.join(classes, CHAR_WHITESPACE)
       }
     }
-    removeClass = function (node: HTMLElement, className: string): void {
+    removeClass = function (node: HTMLElement, className: string) {
       const classes = node.className.split(CHAR_WHITESPACE)
       if (array.remove(classes, className)) {
         node.className = array.join(classes, CHAR_WHITESPACE)
@@ -96,6 +94,9 @@ if (doc) {
 
 const CHAR_WHITESPACE = ' ',
 
+/**
+ * 绑定在 HTML 元素上的事件发射器
+ */
 EMITTER = '$emitter',
 
 /**
@@ -121,34 +122,7 @@ namespaces = {
   xlink: domain + '1999/xlink',
 },
 
-specialEvents: Record<string, SpecialEvent> = {
-  input: {
-    on(node: HTMLElement, listener: signature.specialEventListener) {
-      let locked = env.FALSE
-      domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
-        locked = env.TRUE
-      })
-      domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: CustomEvent) {
-        locked = env.FALSE
-        event.type = INPUT
-        listener(event)
-      })
-      addEventListener(node, INPUT, listener[INPUT] = function (event: Event) {
-        if (!locked) {
-          listener(event)
-        }
-      })
-    },
-    off(node: HTMLElement, listener: signature.specialEventListener) {
-      domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
-      domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
-      removeEventListener(node, INPUT, listener[INPUT])
-      listener[COMPOSITION_START] =
-      listener[COMPOSITION_END] =
-      listener[INPUT] = env.UNDEFINED
-    }
-  }
-},
+specialEvents: Record<string, SpecialEvent> = {},
 
 domApi: API = {
 
@@ -344,6 +318,33 @@ domApi: API = {
 
   specialEvents
 
+}
+
+specialEvents[INPUT] = {
+  on(node: HTMLElement, listener: signature.specialEventListener) {
+    let locked = env.FALSE
+    domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
+      locked = env.TRUE
+    })
+    domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: CustomEvent) {
+      locked = env.FALSE
+      event.type = INPUT
+      listener(event)
+    })
+    addEventListener(node, INPUT, listener[INPUT] = function (event: Event) {
+      if (!locked) {
+        listener(event)
+      }
+    })
+  },
+  off(node: HTMLElement, listener: signature.specialEventListener) {
+    domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
+    domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
+    removeEventListener(node, INPUT, listener[INPUT])
+    listener[COMPOSITION_START] =
+    listener[COMPOSITION_END] =
+    listener[INPUT] = env.UNDEFINED
+  }
 }
 
 export default domApi
