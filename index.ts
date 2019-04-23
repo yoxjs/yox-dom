@@ -19,13 +19,23 @@ import * as signature from 'yox-type/index'
 
 let doc = env.doc,
 
+// textContent 不兼容 IE 678
+innerText = 'textContent',
+
 addEventListener: Function = env.EMPTY_FUNCTION,
 
 removeEventListener: Function = env.EMPTY_FUNCTION,
 
-findElement: Function = env.EMPTY_FUNCTION
+addClass: (node: HTMLElement, className: string) => void = env.EMPTY_FUNCTION,
+
+removeClass: (node: HTMLElement, className: string) => void = env.EMPTY_FUNCTION,
+
+findElement: (selector: string) => Element | void = env.EMPTY_FUNCTION
 
 if (doc) {
+  if (!isDef(doc.body[innerText])) {
+    innerText = 'innerText'
+  }
   if (doc.addEventListener) {
     addEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
       node.addEventListener(type, listener, env.FALSE)
@@ -42,14 +52,46 @@ if (doc) {
       node.detachEvent(`on${type}`, listener)
     }
   }
-  findElement = doc.querySelector
-    ? function (selector: string) {
-        return (doc as Document).querySelector(selector)
+  if (doc.body.classList) {
+    addClass = function (node: HTMLElement, className: string): void {
+      node.classList.add(className)
+    }
+    removeClass = function (node: HTMLElement, className: string): void {
+      node.classList.remove(className)
+    }
+  }
+  else {
+    addClass = function (node: HTMLElement, className: string): void {
+      const classes = node.className.split(CHAR_WHITESPACE)
+      if (!array.has(classes, className)) {
+        array.push(classes, className)
+        node.className = array.join(classes, CHAR_WHITESPACE)
       }
-    : function (selector: string) {
-        // 去掉 #
-        return (doc as Document).getElementById(string.slice(selector, 1))
+    }
+    removeClass = function (node: HTMLElement, className: string): void {
+      const classes = node.className.split(CHAR_WHITESPACE)
+      if (array.remove(classes, className)) {
+        node.className = array.join(classes, CHAR_WHITESPACE)
       }
+    }
+  }
+  if (doc.querySelector) {
+    findElement = function (selector: string): Element | void {
+      const node = (doc as Document).querySelector(selector)
+      if (node) {
+        return node
+      }
+    }
+  }
+  else {
+    findElement = function (selector: string): Element | void {
+      // 去掉 #
+      const node = (doc as Document).getElementById(string.slice(selector, 1))
+      if (node) {
+        return node
+      }
+    }
+  }
 }
 
 const CHAR_WHITESPACE = ' ',
@@ -195,9 +237,7 @@ domApi: API = {
     }
   },
 
-  find(selector: string): HTMLElement | void {
-    return findElement(selector)
-  },
+  find: findElement,
 
   tag(node: Node): string | void {
     if (node.nodeType === 1) {
@@ -207,13 +247,10 @@ domApi: API = {
 
   text(node: Node, content?: string): string | void {
     if (isDef(content)) {
-      node.textContent = content as string
+      node[innerText] = content as string
     }
     else {
-      const { textContent } = node
-      if (is.string(textContent)) {
-        return textContent as string
-      }
+      return node[innerText]
     }
   },
 
@@ -226,32 +263,9 @@ domApi: API = {
     }
   },
 
-  addClass(node: HTMLElement, className: string): void {
-    const { classList } = node
-    if (classList && classList.add) {
-      classList.add(className)
-    }
-    else {
-      const classes = node.className.split(CHAR_WHITESPACE)
-      if (!array.has(classes, className)) {
-        array.push(classes, className)
-        node.className = array.join(classes, CHAR_WHITESPACE)
-      }
-    }
-  },
+  addClass,
 
-  removeClass(node: HTMLElement, className: string): void {
-    const { classList } = node
-    if (classList && classList.remove) {
-      classList.remove(className)
-    }
-    else {
-      const classes = node.className.split(CHAR_WHITESPACE)
-      if (array.remove(classes, className)) {
-        node.className = array.join(classes, CHAR_WHITESPACE)
-      }
-    }
-  },
+  removeClass,
 
   on(node: HTMLElement, type: string, listener: signature.nativeEventListener, context?: any): void {
 
