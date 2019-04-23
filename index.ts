@@ -310,7 +310,7 @@ domApi: API = {
 
     }
 
-    if (object.empty(listeners)) {
+    if (object.falsy(listeners)) {
       node[EMITTER] = env.UNDEFINED
     }
 
