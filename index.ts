@@ -181,16 +181,16 @@ domApi: API = {
     node.removeAttribute(name)
   },
 
-  before(parentNode: Node, newNode: Node, referenceNode: Node): void {
-    parentNode.insertBefore(newNode, referenceNode)
+  before(parentNode: Node, node: Node, referenceNode: Node): void {
+    parentNode.insertBefore(node, referenceNode)
   },
 
   append(parentNode: Node, node: Node): void {
     parentNode.appendChild(node)
   },
 
-  replace(parentNode: Node, newNode: Node, oldNode: Node): void {
-    parentNode.replaceChild(newNode, oldNode)
+  replace(parentNode: Node, node: Node, oldNode: Node): void {
+    parentNode.replaceChild(node, oldNode)
   },
 
   remove(parentNode: Node, node: Node): void {
@@ -219,18 +219,18 @@ domApi: API = {
     }
   },
 
-  text(node: Node, content?: string): string | void {
-    if (isDef(content)) {
-      node[innerText] = content as string
+  text(node: Node, text?: string): string | void {
+    if (isDef(text)) {
+      node[innerText] = text as string
     }
     else {
       return node[innerText]
     }
   },
 
-  html(node: HTMLElement, content?: string): string | void {
-    if (isDef(content)) {
-      node.innerHTML = content as string
+  html(node: Element, html?: string): string | void {
+    if (isDef(html)) {
+      node.innerHTML = html as string
     }
     else {
       return node.innerHTML
