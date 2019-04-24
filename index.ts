@@ -118,8 +118,8 @@ domain = 'http://www.w3.org/',
 
 namespaces = {
   svg: domain + '2000/svg',
-  xml: domain + 'XML/1998/namespace',
-  xlink: domain + '1999/xlink',
+  // xml: domain + 'XML/1998/namespace',
+  // xlink: domain + '1999/xlink',
 },
 
 specialEvents: Record<string, SpecialEvent> = {},
