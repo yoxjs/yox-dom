@@ -1,6 +1,6 @@
 {
   "name": "yox-dom",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "dom api for Yox.js",
   "main": "index.js",
   "directories": {},

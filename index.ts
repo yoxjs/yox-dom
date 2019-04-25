@@ -1,6 +1,7 @@
 import * as config from 'yox-config/index'
 
 import isDef from 'yox-common/src/function/isDef'
+import isUndef from 'yox-common/src/function/isUndef'
 
 import * as env from 'yox-common/src/util/env'
 import * as array from 'yox-common/src/util/array'
@@ -31,7 +32,7 @@ removeClass: (node: HTMLElement, className: string) => void = env.EMPTY_FUNCTION
 findElement: (selector: string) => Element | void = env.EMPTY_FUNCTION
 
 if (doc) {
-  if (!isDef(doc.body[innerText])) {
+  if (isUndef(doc.body[innerText])) {
     innerText = 'innerText'
   }
   if (doc.addEventListener) {
@@ -84,7 +85,10 @@ if (doc) {
   else {
     findElement = function (selector: string): Element | void {
       // 去掉 #
-      const node = (doc as Document).getElementById(string.slice(selector, 1))
+      if (string.codeAt(selector, 0) === 35) {
+        selector = string.slice(selector, 1)
+      }
+      const node = (doc as Document).getElementById(selector)
       if (node) {
         return node
       }
