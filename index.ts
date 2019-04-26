@@ -74,35 +74,30 @@ if (doc) {
 
     if (!doc.addEventListener) {
 
-      const CLICK = 'click',
-
-      CHANGE = 'change',
-
-      PROPERTY_CHANGE = 'propertychange',
-
-      LISTENER = '$listener'
+      const PROPERTY_CHANGE = 'propertychange'
 
       addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-        if (type === INPUT) {
+        if (type === env.EVENT_INPUT) {
           addEventListener(
             node,
             PROPERTY_CHANGE,
-            listener[LISTENER] = function (event: any) {
-              if (event.propertyName === 'value') {
+            // 借用 EMITTER，反正只是内部临时用一下...
+            listener[EMITTER] = function (event: any) {
+              if (event.propertyName === env.RAW_VALUE) {
                 event = new CustomEvent(event)
-                event.type = INPUT
+                event.type = env.EVENT_INPUT
                 execute(listener, this, event)
               }
             }
           )
         }
-        else if (type === CHANGE && isBoxElement(node)) {
+        else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
           addEventListener(
             node,
-            CLICK,
-            listener[LISTENER] = function (event: any) {
+            env.EVENT_CLICK,
+            listener[EMITTER] = function (event: any) {
               event = new CustomEvent(event)
-              event.type = CHANGE
+              event.type = env.EVENT_CHANGE
               execute(listener, this, event)
             }
           )
@@ -113,13 +108,13 @@ if (doc) {
       }
 
       removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-        if (type === INPUT) {
-          removeEventListener(node, PROPERTY_CHANGE, listener[LISTENER])
-          delete listener[LISTENER]
+        if (type === env.EVENT_INPUT) {
+          removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
+          delete listener[EMITTER]
         }
-        else if (type === CHANGE && isBoxElement(node)) {
-          removeEventListener(node, CLICK, listener[LISTENER])
-          delete listener[LISTENER]
+        else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
+          removeEventListener(node, env.EVENT_CLICK, listener[EMITTER])
+          delete listener[EMITTER]
         }
         else {
           node.detachEvent(`on${type}`, listener)
@@ -199,11 +194,6 @@ EMITTER = '$emitter',
  * 低版本 IE 上 style 标签的专有属性
  */
 STYLE_SHEET = 'styleSheet',
-
-/**
- * 输入事件
- */
-INPUT = 'input',
 
 /**
  * 跟输入事件配套使用的事件
@@ -437,7 +427,7 @@ domApi: API = {
 
 }
 
-specialEvents[INPUT] = {
+specialEvents[env.EVENT_INPUT] = {
   on(node: HTMLElement, listener: signature.specialEventListener) {
     let locked = env.FALSE
     domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
@@ -445,10 +435,10 @@ specialEvents[INPUT] = {
     })
     domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: CustomEvent) {
       locked = env.FALSE
-      event.type = INPUT
+      event.type = env.EVENT_INPUT
       listener(event)
     })
-    addEventListener(node, INPUT, listener[INPUT] = function (event: Event) {
+    addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event) {
       if (!locked) {
         listener(event)
       }
@@ -457,10 +447,10 @@ specialEvents[INPUT] = {
   off(node: HTMLElement, listener: signature.specialEventListener) {
     domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
     domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
-    removeEventListener(node, INPUT, listener[INPUT])
+    removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
     listener[COMPOSITION_START] =
     listener[COMPOSITION_END] =
-    listener[INPUT] = env.UNDEFINED
+    listener[env.EVENT_INPUT] = env.UNDEFINED
   }
 }
 
