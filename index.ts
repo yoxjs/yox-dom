@@ -1,12 +1,13 @@
 import * as config from 'yox-config/index'
 
 import isDef from 'yox-common/src/function/isDef'
-import isUndef from 'yox-common/src/function/isUndef'
+import execute from 'yox-common/src/function/execute'
 
 import * as env from 'yox-common/src/util/env'
 import * as array from 'yox-common/src/util/array'
 import * as string from 'yox-common/src/util/string'
 import * as object from 'yox-common/src/util/object'
+import * as logger from 'yox-common/src/util/logger'
 
 import Emitter from 'yox-common/src/util/Emitter'
 import CustomEvent from 'yox-common/src/util/Event'
@@ -18,48 +19,40 @@ import * as signature from 'yox-type/index'
 
 let doc = env.doc,
 
-// textContent 不兼容 IE 678
+// 这里先写 IE9 支持的接口
 innerText = 'textContent',
 
-addEventListener: (node: HTMLElement, type: string, listener: (event: Event) => void) => void = env.EMPTY_FUNCTION,
+findElement = function (selector: string): Element | void {
+  const node = (doc as Document).querySelector(selector)
+  if (node) {
+    return node
+  }
+},
 
-removeEventListener: (node: HTMLElement, type: string, listener: (event: Event) => void) => void = env.EMPTY_FUNCTION,
+addEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
+  node.addEventListener(type, listener, env.FALSE)
+},
 
-addClass: (node: HTMLElement, className: string) => void = env.EMPTY_FUNCTION,
+removeEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
+  node.removeEventListener(type, listener, env.FALSE)
+},
 
-removeClass: (node: HTMLElement, className: string) => void = env.EMPTY_FUNCTION,
+// IE9 不支持 classList
+addClass = function (node: HTMLElement, className: string) {
+  node.classList.add(className)
+},
 
-findElement: (selector: string) => Element | void = env.EMPTY_FUNCTION
+removeClass = function (node: HTMLElement, className: string) {
+  node.classList.remove(className)
+},
+
+createEvent = function (event: any, node: HTMLElement): any {
+  return event
+}
 
 if (doc) {
-  if (isUndef(doc.body[innerText])) {
-    innerText = 'innerText'
-  }
-  if (doc.addEventListener) {
-    addEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
-      node.addEventListener(type, listener, env.FALSE)
-    }
-    removeEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
-      node.removeEventListener(type, listener, env.FALSE)
-    }
-  }
-  else {
-    addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-      node.attachEvent(`on${type}`, listener)
-    }
-    removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-      node.detachEvent(`on${type}`, listener)
-    }
-  }
-  if (doc.body.classList) {
-    addClass = function (node: HTMLElement, className: string) {
-      node.classList.add(className)
-    }
-    removeClass = function (node: HTMLElement, className: string) {
-      node.classList.remove(className)
-    }
-  }
-  else {
+
+  if (!doc.body.classList) {
     addClass = function (node: HTMLElement, className: string) {
       const classes = node.className.split(CHAR_WHITESPACE)
       if (!array.has(classes, className)) {
@@ -74,26 +67,125 @@ if (doc) {
       }
     }
   }
-  if (doc.querySelector) {
-    findElement = function (selector: string): Element | void {
-      const node = (doc as Document).querySelector(selector)
-      if (node) {
-        return node
+
+  // 在 NODE_ENV 之外再搞一个环境变量，布尔类型
+  // 为 IE9 以下浏览器打补丁
+  if (process.env.NODE_LEGACY) {
+
+    if (!doc.addEventListener) {
+
+      const CLICK = 'click',
+
+      CHANGE = 'change',
+
+      PROPERTY_CHANGE = 'propertychange',
+
+      LISTENER = '$listener'
+
+      addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
+        if (type === INPUT) {
+          addEventListener(
+            node,
+            PROPERTY_CHANGE,
+            listener[LISTENER] = function (event: any) {
+              if (event.propertyName === 'value') {
+                event = new CustomEvent(event)
+                event.type = INPUT
+                execute(listener, this, event)
+              }
+            }
+          )
+        }
+        else if (type === CHANGE && isBoxElement(node)) {
+          addEventListener(
+            node,
+            CLICK,
+            listener[LISTENER] = function (event: any) {
+              event = new CustomEvent(event)
+              event.type = CHANGE
+              execute(listener, this, event)
+            }
+          )
+        }
+        else {
+          node.attachEvent(`on${type}`, listener)
+        }
       }
+
+      removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
+        if (type === INPUT) {
+          removeEventListener(node, PROPERTY_CHANGE, listener[LISTENER])
+          delete listener[LISTENER]
+        }
+        else if (type === CHANGE && isBoxElement(node)) {
+          removeEventListener(node, CLICK, listener[LISTENER])
+          delete listener[LISTENER]
+        }
+        else {
+          node.detachEvent(`on${type}`, listener)
+        }
+      }
+
+      function isBoxElement(node: HTMLInputElement) {
+        return node.tagName === 'INPUT'
+          && (node.type === 'radio' || node.type === 'checkbox')
+      }
+
+      class IEEvent {
+
+        currentTarget: HTMLElement
+
+        target: HTMLElement | EventTarget
+
+        originalEvent: Event
+
+        constructor(event: Event, element: HTMLElement) {
+
+          object.extend(this, event)
+
+          this.currentTarget = element
+          this.target = event.srcElement || element
+          this.originalEvent = event
+
+        }
+
+        preventDefault() {
+          this.originalEvent.returnValue = env.FALSE
+        }
+
+        stopPropagation() {
+          this.originalEvent.cancelBubble = env.TRUE
+        }
+
+      }
+
+      // textContent 不兼容 IE 678
+      innerText = 'innerText'
+
+      createEvent = function (event, element) {
+        return new IEEvent(event, element)
+      }
+
+      findElement = function (selector: string): Element | void {
+        // 去掉 #
+        if (string.codeAt(selector, 0) === 35) {
+          selector = string.slice(selector, 1)
+        }
+        else {
+          if (process.env.NODE_ENV === 'dev') {
+            logger.fatal(`legacy 版本选择器只支持 #id 格式`)
+          }
+        }
+        const node = (doc as Document).getElementById(selector)
+        if (node) {
+          return node
+        }
+      }
+
     }
+
   }
-  else {
-    findElement = function (selector: string): Element | void {
-      // 去掉 #
-      if (string.codeAt(selector, 0) === 35) {
-        selector = string.slice(selector, 1)
-      }
-      const node = (doc as Document).getElementById(selector)
-      if (node) {
-        return node
-      }
-    }
-  }
+
 }
 
 const CHAR_WHITESPACE = ' ',
@@ -102,6 +194,11 @@ const CHAR_WHITESPACE = ' ',
  * 绑定在 HTML 元素上的事件发射器
  */
 EMITTER = '$emitter',
+
+/**
+ * 低版本 IE 上 style 标签的专有属性
+ */
+STYLE_SHEET = 'styleSheet',
 
 /**
  * 输入事件
@@ -142,10 +239,6 @@ domApi: API = {
 
   createComment(text: string): Comment {
     return (doc as Document).createComment(text)
-  },
-
-  createEvent(event: any, node: HTMLElement): any {
-    return event
   },
 
   prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
@@ -223,18 +316,38 @@ domApi: API = {
     }
   },
 
-  text(node: Node, text?: string): string | void {
+  text(node: Node, text?: string, isStyle?: boolean): string | void {
     if (isDef(text)) {
-      node[innerText] = text as string
+      if (process.env.NODE_LEGACY) {
+        if (isStyle && isDef(node[STYLE_SHEET])) {
+          node[STYLE_SHEET].cssText = text
+        }
+        else {
+          node[innerText] = text as string
+        }
+      }
+      else {
+        node[innerText] = text as string
+      }
     }
     else {
       return node[innerText]
     }
   },
 
-  html(node: Element, html?: string): string | void {
+  html(node: Element, html?: string, isStyle?: boolean): string | void {
     if (isDef(html)) {
-      node.innerHTML = html as string
+      if (process.env.NODE_LEGACY) {
+        if (isStyle && isDef(node[STYLE_SHEET])) {
+          node[STYLE_SHEET].cssText = html
+        }
+        else {
+          node.innerHTML = html as string
+        }
+      }
+      else {
+        node.innerHTML = html as string
+      }
     }
     else {
       return node.innerHTML
@@ -263,7 +376,7 @@ domApi: API = {
         emitter.fire(
           event instanceof CustomEvent
             ? event
-            : new CustomEvent(event.type, domApi.createEvent(event, node))
+            : new CustomEvent(event.type, createEvent(event, node))
         )
 
       }

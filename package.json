@@ -1,6 +1,6 @@
 {
   "name": "yox-dom",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "dom api for Yox.js",
   "main": "index.js",
   "directories": {},
@@ -15,9 +15,12 @@
     "url": "https://github.com/yoxjs/yox-dom/issues"
   },
   "homepage": "https://github.com/yoxjs/yox-dom#readme",
+  "devDependencies": {
+    "@types/node": "^11.13.7"
+  },
   "dependencies": {
-    "yox-common": "^0.18.23",
+    "yox-common": "^0.18.25",
     "yox-config": "^0.1.6",
-    "yox-type": "^0.0.38"
+    "yox-type": "^0.0.39"
   }
 }
