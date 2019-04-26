@@ -68,7 +68,6 @@ if (doc) {
     }
   }
 
-  // 在 NODE_ENV 之外再搞一个环境变量，布尔类型
   // 为 IE9 以下浏览器打补丁
   if (process.env.NODE_LEGACY) {
 
