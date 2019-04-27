@@ -165,10 +165,8 @@ if (doc) {
         if (string.codeAt(selector, 0) === 35) {
           selector = string.slice(selector, 1)
         }
-        else {
-          if (process.env.NODE_ENV === 'dev') {
-            logger.fatal(`legacy 版本选择器只支持 #id 格式`)
-          }
+        else if (process.env.NODE_ENV === 'dev') {
+          logger.fatal(`legacy 版本选择器只支持 #id 格式`)
         }
         const node = (doc as Document).getElementById(selector)
         if (node) {
