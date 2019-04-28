@@ -210,7 +210,34 @@ namespaces = {
   // xlink: domain + '1999/xlink',
 },
 
-specialEvents: Record<string, SpecialEvent> = {},
+specialEvents: Record<string, SpecialEvent> = {
+  model: {
+    on(node: HTMLElement, listener: signature.specialEventListener) {
+      let locked = env.FALSE
+      domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
+        locked = env.TRUE
+      })
+      domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: CustomEvent) {
+        locked = env.FALSE
+        event.type = env.EVENT_INPUT
+        listener(event)
+      })
+      addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event) {
+        if (!locked) {
+          listener(event)
+        }
+      })
+    },
+    off(node: HTMLElement, listener: signature.specialEventListener) {
+      domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
+      domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
+      removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
+      listener[COMPOSITION_START] =
+      listener[COMPOSITION_END] =
+      listener[env.EVENT_INPUT] = env.UNDEFINED
+    }
+  }
+},
 
 domApi: API = {
 
@@ -422,33 +449,6 @@ domApi: API = {
 
   specialEvents
 
-}
-
-specialEvents[env.EVENT_INPUT] = {
-  on(node: HTMLElement, listener: signature.specialEventListener) {
-    let locked = env.FALSE
-    domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
-      locked = env.TRUE
-    })
-    domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: CustomEvent) {
-      locked = env.FALSE
-      event.type = env.EVENT_INPUT
-      listener(event)
-    })
-    addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event) {
-      if (!locked) {
-        listener(event)
-      }
-    })
-  },
-  off(node: HTMLElement, listener: signature.specialEventListener) {
-    domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
-    domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
-    removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
-    listener[COMPOSITION_START] =
-    listener[COMPOSITION_END] =
-    listener[env.EVENT_INPUT] = env.UNDEFINED
-  }
 }
 
 export default domApi
