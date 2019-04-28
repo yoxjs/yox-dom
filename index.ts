@@ -210,34 +210,7 @@ namespaces = {
   // xlink: domain + '1999/xlink',
 },
 
-specialEvents: Record<string, SpecialEvent> = {
-  model: {
-    on(node: HTMLElement, listener: signature.specialEventListener) {
-      let locked = env.FALSE
-      domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
-        locked = env.TRUE
-      })
-      domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: CustomEvent) {
-        locked = env.FALSE
-        event.type = env.EVENT_INPUT
-        listener(event)
-      })
-      addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event) {
-        if (!locked) {
-          listener(event)
-        }
-      })
-    },
-    off(node: HTMLElement, listener: signature.specialEventListener) {
-      domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
-      domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
-      removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
-      listener[COMPOSITION_START] =
-      listener[COMPOSITION_END] =
-      listener[env.EVENT_INPUT] = env.UNDEFINED
-    }
-  }
-},
+specialEvents: Record<string, SpecialEvent> = {},
 
 domApi: API = {
 
@@ -386,13 +359,11 @@ domApi: API = {
 
       // 唯一的原生监听器
       nativeListener = function (event: Event | CustomEvent) {
-
         emitter.fire(
           event instanceof CustomEvent
             ? event
             : new CustomEvent(event.type, createEvent(event, node))
         )
-
       }
 
       nativeListeners[type] = nativeListener
@@ -405,6 +376,7 @@ domApi: API = {
       }
 
     }
+
     emitter.on(
       type,
       {
@@ -431,7 +403,7 @@ domApi: API = {
       nativeListener = nativeListeners[type]
 
       if (special) {
-        special.off(node, nativeListener as signature.specialEventListener)
+        special.off(node, nativeListener as signature.nativeEventListener)
       }
       else {
         removeEventListener(node, type, nativeListener)
@@ -449,6 +421,36 @@ domApi: API = {
 
   specialEvents
 
+}
+
+specialEvents[env.EVENT_MODEL] = {
+  on(node: HTMLElement, listener: signature.nativeEventListener) {
+    let locked = env.FALSE
+    domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
+      locked = env.TRUE
+    })
+    domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: Event | CustomEvent) {
+      locked = env.FALSE
+      listener(
+        new CustomEvent(env.EVENT_MODEL, event)
+      )
+    })
+    addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event | CustomEvent) {
+      if (!locked) {
+        listener(
+          new CustomEvent(env.EVENT_MODEL, event)
+        )
+      }
+    })
+  },
+  off(node: HTMLElement, listener: signature.nativeEventListener) {
+    domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
+    domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
+    removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
+    listener[COMPOSITION_START] =
+    listener[COMPOSITION_END] =
+    listener[env.EVENT_INPUT] = env.UNDEFINED
+  }
 }
 
 export default domApi
