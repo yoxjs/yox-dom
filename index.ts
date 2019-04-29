@@ -233,7 +233,10 @@ domApi: API = {
       object.set(node, name, value, env.FALSE)
     }
     else {
-      return object.get(node, name)
+      const holder = object.get(node, name)
+      if (holder) {
+        return holder.value
+      }
     }
   },
 
