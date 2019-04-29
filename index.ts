@@ -10,7 +10,7 @@ import * as object from 'yox-common/src/util/object'
 import * as logger from 'yox-common/src/util/logger'
 
 import Emitter from 'yox-common/src/util/Emitter'
-import CustomEvent from 'yox-common/src/util/Event'
+import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 import API from 'yox-type/src/API'
 import SpecialEvent from 'yox-type/src/SpecialEvent'
@@ -403,7 +403,7 @@ domApi: API = {
       nativeListener = nativeListeners[type]
 
       if (special) {
-        special.off(node, nativeListener as signature.nativeEventListener)
+        special.off(node, nativeListener)
       }
       else {
         removeEventListener(node, type, nativeListener)
