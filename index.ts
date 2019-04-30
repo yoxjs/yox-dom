@@ -52,7 +52,8 @@ createEvent = function (event: any, node: HTMLElement): any {
 
 if (doc) {
 
-  if (!doc.body.classList) {
+  // 此时 doc.body 不一定有值，比如 script 放在 head 里
+  if (!doc.documentElement.classList) {
     addClass = function (node: HTMLElement, className: string) {
       const classes = node.className.split(CHAR_WHITESPACE)
       if (!array.has(classes, className)) {
