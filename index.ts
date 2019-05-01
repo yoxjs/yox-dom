@@ -22,6 +22,8 @@ let doc = env.doc,
 // 这里先写 IE9 支持的接口
 innerText = 'textContent',
 
+innerHTML = 'innerHTML',
+
 findElement = function (selector: string): Element | void {
   const node = (doc as Document).querySelector(selector)
   if (node) {
@@ -310,7 +312,7 @@ domApi: API = {
   text(node: Node, text?: string, isStyle?: boolean): string | void {
     if (isDef(text)) {
       if (process.env.NODE_LEGACY) {
-        if (isStyle && isDef(node[STYLE_SHEET])) {
+        if (isStyle && object.has(node, STYLE_SHEET)) {
           node[STYLE_SHEET].cssText = text
         }
         else {
@@ -329,19 +331,19 @@ domApi: API = {
   html(node: Element, html?: string, isStyle?: boolean): string | void {
     if (isDef(html)) {
       if (process.env.NODE_LEGACY) {
-        if (isStyle && isDef(node[STYLE_SHEET])) {
+        if (isStyle && object.has(node, STYLE_SHEET)) {
           node[STYLE_SHEET].cssText = html
         }
         else {
-          node.innerHTML = html as string
+          node[innerHTML] = html as string
         }
       }
       else {
-        node.innerHTML = html as string
+        node[innerHTML] = html as string
       }
     }
     else {
-      return node.innerHTML
+      return node[innerHTML]
     }
   },
 
