@@ -17,7 +17,7 @@ import SpecialEvent from 'yox-type/src/SpecialEvent'
 
 import * as signature from 'yox-type/index'
 
-let doc = env.doc,
+let doc = env.DOCUMENT,
 
 // 这里先写 IE9 支持的接口
 innerText = 'textContent',
@@ -351,7 +351,7 @@ domApi: API = {
 
   removeClass,
 
-  on(node: HTMLElement, type: string, listener: signature.nativeEventListener, context?: any): void {
+  on(node: HTMLElement, type: string, listener: signature.nativeListener, context?: any): void {
 
     const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -365,11 +365,13 @@ domApi: API = {
 
       // 唯一的原生监听器
       nativeListener = function (event: Event | CustomEvent) {
-        emitter.fire(
-          event instanceof CustomEvent
-            ? event
-            : new CustomEvent(event.type, createEvent(event, node))
-        )
+
+        const customEvent = event instanceof CustomEvent
+          ? event
+          : new CustomEvent(event.type, createEvent(event, node))
+
+        emitter.fire(customEvent.type, [customEvent])
+
       }
 
       nativeListeners[type] = nativeListener
@@ -392,7 +394,7 @@ domApi: API = {
     )
   },
 
-  off(node: HTMLElement, type: string, listener: signature.nativeEventListener): void {
+  off(node: HTMLElement, type: string, listener: signature.nativeListener): void {
 
     const emitter: Emitter = node[EMITTER],
 
@@ -430,7 +432,7 @@ domApi: API = {
 }
 
 specialEvents[env.EVENT_MODEL] = {
-  on(node: HTMLElement, listener: signature.nativeEventListener) {
+  on(node: HTMLElement, listener: signature.nativeListener) {
     let locked = env.FALSE
     domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
       locked = env.TRUE
@@ -449,7 +451,7 @@ specialEvents[env.EVENT_MODEL] = {
       }
     })
   },
-  off(node: HTMLElement, listener: signature.nativeEventListener) {
+  off(node: HTMLElement, listener: signature.nativeListener) {
     domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
     domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
     removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
