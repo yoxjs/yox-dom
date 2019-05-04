@@ -368,6 +368,10 @@ domApi: API = {
           ? event
           : new CustomEvent(event.type, createEvent(event, node))
 
+        if (customEvent.type !== type) {
+          customEvent.type = type
+        }
+
         emitter.fire(type, [customEvent])
 
       }
