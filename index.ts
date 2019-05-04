@@ -368,7 +368,7 @@ domApi: API = {
           ? event
           : new CustomEvent(event.type, createEvent(event, node))
 
-        emitter.fire(customEvent.type, [customEvent])
+        emitter.fire(type, [customEvent])
 
       }
 
@@ -437,15 +437,11 @@ specialEvents[env.EVENT_MODEL] = {
     })
     domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: Event | CustomEvent) {
       locked = env.FALSE
-      listener(
-        new CustomEvent(env.EVENT_MODEL, event)
-      )
+      listener(event)
     })
     addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event | CustomEvent) {
       if (!locked) {
-        listener(
-          new CustomEvent(env.EVENT_MODEL, event)
-        )
+        listener(event)
       }
     })
   },
