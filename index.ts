@@ -121,7 +121,7 @@ if (env.DOCUMENT) {
         }
       }
 
-      function isBoxElement(node: HTMLInputElement) {
+      const isBoxElement = function (node: HTMLInputElement) {
         return node.tagName === 'INPUT'
           && (node.type === 'radio' || node.type === 'checkbox')
       }
