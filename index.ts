@@ -17,15 +17,13 @@ import SpecialEvent from 'yox-type/src/SpecialEvent'
 
 import * as signature from 'yox-type/index'
 
-let doc = env.DOCUMENT,
-
 // 这里先写 IE9 支持的接口
-innerText = 'textContent',
+let innerText = 'textContent',
 
 innerHTML = 'innerHTML',
 
 findElement = function (selector: string): Element | void {
-  const node = (doc as Document).querySelector(selector)
+  const node = (env.DOCUMENT as Document).querySelector(selector)
   if (node) {
     return node
   }
@@ -52,10 +50,10 @@ createEvent = function (event: any, node: HTMLElement): any {
   return event
 }
 
-if (doc) {
+if (env.DOCUMENT) {
 
-  // 此时 doc.body 不一定有值，比如 script 放在 head 里
-  if (!doc.documentElement.classList) {
+  // 此时 document.body 不一定有值，比如 script 放在 head 里
+  if (!env.DOCUMENT.documentElement.classList) {
     addClass = function (node: HTMLElement, className: string) {
       const classes = node.className.split(CHAR_WHITESPACE)
       if (!array.has(classes, className)) {
@@ -74,7 +72,7 @@ if (doc) {
   // 为 IE9 以下浏览器打补丁
   if (process.env.NODE_LEGACY) {
 
-    if (!doc.addEventListener) {
+    if (!env.DOCUMENT.addEventListener) {
 
       const PROPERTY_CHANGE = 'propertychange'
 
@@ -171,7 +169,7 @@ if (doc) {
         else if (process.env.NODE_ENV === 'dev') {
           logger.fatal(`legacy 版本选择器只支持 #id 格式`)
         }
-        const node = (doc as Document).getElementById(selector)
+        const node = (env.DOCUMENT as Document).getElementById(selector)
         if (node) {
           return node
         }
@@ -219,16 +217,16 @@ domApi: API = {
 
   createElement(tag: string, isSvg?: boolean): Element {
     return isSvg
-      ? (doc as Document).createElementNS(namespaces.svg, tag)
-      : (doc as Document).createElement(tag)
+      ? (env.DOCUMENT as Document).createElementNS(namespaces.svg, tag)
+      : (env.DOCUMENT as Document).createElement(tag)
   },
 
   createText(text: string): Text {
-    return (doc as Document).createTextNode(text)
+    return (env.DOCUMENT as Document).createTextNode(text)
   },
 
   createComment(text: string): Comment {
-    return (doc as Document).createComment(text)
+    return (env.DOCUMENT as Document).createComment(text)
   },
 
   prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
