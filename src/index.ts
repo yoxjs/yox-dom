@@ -12,10 +12,10 @@ import * as logger from 'yox-common/src/util/logger'
 import Emitter from 'yox-common/src/util/Emitter'
 import CustomEvent from 'yox-common/src/util/CustomEvent'
 
-import API from 'yox-type/src/API'
-import SpecialEvent from 'yox-type/src/SpecialEvent'
+import API from 'yox-type/src/interface/API'
+import SpecialEvent from 'yox-type/src/interface/SpecialEvent'
 
-import * as signature from 'yox-type/index'
+import * as signature from 'yox-type/src/type'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
