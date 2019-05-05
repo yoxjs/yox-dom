@@ -1,6 +1,6 @@
 {
   "name": "yox-dom",
-  "version": "0.0.40",
+  "version": "0.0.41",
   "description": "dom api for Yox.js",
   "directories": {},
   "repository": {
@@ -18,8 +18,8 @@
     "@types/node": "^11.13.7"
   },
   "dependencies": {
-    "yox-common": "^0.18.44",
-    "yox-config": "^0.1.6",
-    "yox-type": "^0.0.61"
+    "yox-common": "^0.18.45",
+    "yox-config": "^0.1.7",
+    "yox-type": "^0.0.62"
   }
 }
