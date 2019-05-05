@@ -1,8 +1,7 @@
 test
 node_modules
-.babelrc
+dist
 .gitignore
 .npmignore
-dist
 package-lock.json
 yarn.lock

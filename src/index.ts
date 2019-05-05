@@ -15,7 +15,7 @@ import CustomEvent from 'yox-common/src/util/CustomEvent'
 import API from 'yox-type/src/interface/API'
 import SpecialEvent from 'yox-type/src/interface/SpecialEvent'
 
-import * as signature from 'yox-type/src/type'
+import * as type from 'yox-type/src/type'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
@@ -349,7 +349,7 @@ domApi: API = {
 
   removeClass,
 
-  on(node: HTMLElement, type: string, listener: signature.nativeListener, context?: any): void {
+  on(node: HTMLElement, type: string, listener: type.nativeListener, context?: any): void {
 
     const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -396,7 +396,7 @@ domApi: API = {
     )
   },
 
-  off(node: HTMLElement, type: string, listener: signature.nativeListener): void {
+  off(node: HTMLElement, type: string, listener: type.nativeListener): void {
 
     const emitter: Emitter = node[EMITTER],
 
@@ -434,7 +434,7 @@ domApi: API = {
 }
 
 specialEvents[env.EVENT_MODEL] = {
-  on(node: HTMLElement, listener: signature.nativeListener) {
+  on(node: HTMLElement, listener: type.nativeListener) {
     let locked = env.FALSE
     domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
       locked = env.TRUE
@@ -449,7 +449,7 @@ specialEvents[env.EVENT_MODEL] = {
       }
     })
   },
-  off(node: HTMLElement, listener: signature.nativeListener) {
+  off(node: HTMLElement, listener: type.nativeListener) {
     domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
     domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
     removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
