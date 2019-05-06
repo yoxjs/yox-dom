@@ -1,21 +1,21 @@
-import * as config from 'yox-config/src/config'
+import * as config from '../../yox-config/src/config'
 
-import isDef from 'yox-common/src/function/isDef'
-import execute from 'yox-common/src/function/execute'
+import isDef from '../../yox-common/src/function/isDef'
+import execute from '../../yox-common/src/function/execute'
 
-import * as env from 'yox-common/src/util/env'
-import * as array from 'yox-common/src/util/array'
-import * as string from 'yox-common/src/util/string'
-import * as object from 'yox-common/src/util/object'
-import * as logger from 'yox-common/src/util/logger'
+import * as env from '../../yox-common/src/util/env'
+import * as array from '../../yox-common/src/util/array'
+import * as string from '../../yox-common/src/util/string'
+import * as object from '../../yox-common/src/util/object'
+import * as logger from '../../yox-common/src/util/logger'
 
-import Emitter from 'yox-common/src/util/Emitter'
-import CustomEvent from 'yox-common/src/util/CustomEvent'
+import Emitter from '../../yox-common/src/util/Emitter'
+import CustomEvent from '../../yox-common/src/util/CustomEvent'
 
-import API from 'yox-type/src/interface/API'
-import SpecialEvent from 'yox-type/src/interface/SpecialEvent'
+import API from '../../yox-type/src/interface/API'
+import SpecialEvent from '../../yox-type/src/interface/SpecialEvent'
 
-import * as type from 'yox-type/src/type'
+import * as type from '../../yox-type/src/type'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
