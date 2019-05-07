@@ -260,7 +260,7 @@ domApi: API = {
       // value 还可能是 null
       const value = node.getAttribute(name)
       if (value != env.NULL) {
-        return value
+        return value as string
       }
     }
   },
@@ -269,8 +269,8 @@ domApi: API = {
     node.removeAttribute(name)
   },
 
-  before(parentNode: Node, node: Node, referenceNode: Node): void {
-    parentNode.insertBefore(node, referenceNode)
+  before(parentNode: Node, node: Node, beforeNode: Node): void {
+    parentNode.insertBefore(node, beforeNode)
   },
 
   append(parentNode: Node, node: Node): void {
@@ -349,7 +349,7 @@ domApi: API = {
 
   removeClass,
 
-  on(node: HTMLElement, type: string, listener: type.nativeListener, context?: any): void {
+  on(node: HTMLElement, type: string, listener: type.listener): void {
 
     const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -387,16 +387,10 @@ domApi: API = {
 
     }
 
-    emitter.on(
-      type,
-      {
-        fn: listener,
-        ctx: context,
-      }
-    )
+    emitter.on(type, listener)
   },
 
-  off(node: HTMLElement, type: string, listener: type.nativeListener): void {
+  off(node: HTMLElement, type: string, listener: type.listener): void {
 
     const emitter: Emitter = node[EMITTER],
 
