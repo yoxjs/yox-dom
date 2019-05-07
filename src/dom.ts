@@ -303,7 +303,7 @@ domApi: API = {
 
   tag(node: Node): string | void {
     if (node.nodeType === 1) {
-      return (node as HTMLElement).tagName.toLowerCase()
+      return string.lower((node as HTMLElement).tagName)
     }
   },
 
