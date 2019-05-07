@@ -1,21 +1,20 @@
-import * as config from '../../yox-config/src/config'
+import * as type from 'yox-type/src/type'
+import * as config from 'yox-config/src/config'
 
-import isDef from '../../yox-common/src/function/isDef'
-import execute from '../../yox-common/src/function/execute'
+import isDef from 'yox-common/src/function/isDef'
+import execute from 'yox-common/src/function/execute'
 
-import * as env from '../../yox-common/src/util/env'
-import * as array from '../../yox-common/src/util/array'
-import * as string from '../../yox-common/src/util/string'
-import * as object from '../../yox-common/src/util/object'
-import * as logger from '../../yox-common/src/util/logger'
+import * as env from 'yox-common/src/util/env'
+import * as array from 'yox-common/src/util/array'
+import * as string from 'yox-common/src/util/string'
+import * as object from 'yox-common/src/util/object'
+import * as logger from 'yox-common/src/util/logger'
 
-import Emitter from '../../yox-common/src/util/Emitter'
-import CustomEvent from '../../yox-common/src/util/CustomEvent'
+import Emitter from 'yox-common/src/util/Emitter'
+import CustomEvent from 'yox-common/src/util/CustomEvent'
 
-import API from '../../yox-type/src/interface/API'
-import SpecialEvent from '../../yox-type/src/interface/SpecialEvent'
-
-import * as type from '../../yox-type/src/type'
+import API from 'yox-type/src/interface/API'
+import SpecialEvent from 'yox-type/src/interface/SpecialEvent'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
@@ -167,7 +166,7 @@ if (env.DOCUMENT) {
           selector = string.slice(selector, 1)
         }
         else if (process.env.NODE_ENV === 'dev') {
-          logger.fatal(`legacy 版本选择器只支持 #id 格式`)
+          logger.fatal(`"#id" is the only supported selector for legacy version.`)
         }
         const node = (env.DOCUMENT as Document).getElementById(selector)
         if (node) {
