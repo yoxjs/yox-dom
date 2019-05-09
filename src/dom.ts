@@ -14,7 +14,7 @@ import Emitter from '../../yox-common/src/util/Emitter'
 import CustomEvent from '../../yox-common/src/util/CustomEvent'
 
 import API from '../../yox-type/src/interface/API'
-import SpecialEvent from '../../yox-type/src/interface/SpecialEvent'
+import SpecialEventHooks from '../../yox-type/src/hooks/SpecialEvent'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
@@ -210,7 +210,7 @@ namespaces = {
   // xlink: domain + '1999/xlink',
 },
 
-specialEvents: Record<string, SpecialEvent> = {},
+specialEvents: Record<string, SpecialEventHooks> = {},
 
 domApi: API = {
 
@@ -422,12 +422,12 @@ domApi: API = {
 
   },
 
-  addSpecialEvent(type: string, hooks: SpecialEvent): void {
+  addSpecialEvent(type: string, hooks: SpecialEventHooks): void {
     if (process.env.NODE_ENV === 'dev') {
       if (specialEvents[type]) {
-        logger.error(`"${type}" special event is existed.`)
+        logger.error(`Special event "${type}" is existed.`)
       }
-      logger.log(`"${type}" special event is added.`)
+      logger.success(`Special event "${type}" add success.`)
     }
     specialEvents[type] = hooks
   },
