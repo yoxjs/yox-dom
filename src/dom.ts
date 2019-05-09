@@ -28,11 +28,11 @@ findElement = function (selector: string): Element | void {
   }
 },
 
-addEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
+addEventListener = function (node: HTMLElement | Window | Document, type: string, listener: (event: Event) => void) {
   node.addEventListener(type, listener, env.FALSE)
 },
 
-removeEventListener = function (node: HTMLElement, type: string, listener: (event: Event) => void) {
+removeEventListener = function (node: HTMLElement | Window | Document, type: string, listener: (event: Event) => void) {
   node.removeEventListener(type, listener, env.FALSE)
 },
 
@@ -45,7 +45,7 @@ removeClass = function (node: HTMLElement, className: string) {
   node.classList.remove(className)
 },
 
-createEvent = function (event: any, node: HTMLElement): any {
+createEvent = function (event: any, node: HTMLElement | Window | Document): any {
   return event
 }
 
@@ -127,13 +127,13 @@ if (env.DOCUMENT) {
 
       class IEEvent {
 
-        currentTarget: HTMLElement
+        currentTarget: HTMLElement | Window | Document
 
         target: HTMLElement | EventTarget
 
         originalEvent: Event
 
-        constructor(event: Event, element: HTMLElement) {
+        constructor(event: Event, element: HTMLElement | Window | Document) {
 
           object.extend(this, event)
 
@@ -348,7 +348,7 @@ domApi: API = {
 
   removeClass,
 
-  on(node: HTMLElement, type: string, listener: type.listener): void {
+  on(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
 
     const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -389,7 +389,7 @@ domApi: API = {
     emitter.on(type, listener)
   },
 
-  off(node: HTMLElement, type: string, listener: type.listener): void {
+  off(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
 
     const emitter: Emitter = node[EMITTER],
 
@@ -435,7 +435,7 @@ domApi: API = {
 }
 
 specialEvents[env.EVENT_MODEL] = {
-  on(node: HTMLElement, listener: type.nativeListener) {
+  on(node: HTMLElement | Window | Document, listener: type.nativeListener) {
     let locked = env.FALSE
     domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
       locked = env.TRUE
@@ -450,7 +450,7 @@ specialEvents[env.EVENT_MODEL] = {
       }
     })
   },
-  off(node: HTMLElement, listener: type.nativeListener) {
+  off(node: HTMLElement | Window | Document, listener: type.nativeListener) {
     domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
     domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
     removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
