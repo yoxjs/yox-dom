@@ -427,7 +427,7 @@ domApi: API = {
       if (specialEvents[type]) {
         logger.error(`Special event "${type}" is existed.`)
       }
-      logger.success(`Special event "${type}" add success.`)
+      logger.info(`Special event "${type}" add success.`)
     }
     specialEvents[type] = hooks
   },
