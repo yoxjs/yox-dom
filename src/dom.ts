@@ -49,135 +49,137 @@ createEvent = function (event: any, node: HTMLElement | Window | Document): any 
   return event
 }
 
-if (env.DOCUMENT) {
+if (process.env.NODE_ENV !== 'pure') {
+  if (env.DOCUMENT) {
 
-  // 此时 document.body 不一定有值，比如 script 放在 head 里
-  if (!env.DOCUMENT.documentElement.classList) {
-    addClass = function (node: HTMLElement, className: string) {
-      const classes = node.className.split(CHAR_WHITESPACE)
-      if (!array.has(classes, className)) {
-        array.push(classes, className)
-        node.className = array.join(classes, CHAR_WHITESPACE)
+    // 此时 document.body 不一定有值，比如 script 放在 head 里
+    if (!env.DOCUMENT.documentElement.classList) {
+      addClass = function (node: HTMLElement, className: string) {
+        const classes = node.className.split(CHAR_WHITESPACE)
+        if (!array.has(classes, className)) {
+          array.push(classes, className)
+          node.className = array.join(classes, CHAR_WHITESPACE)
+        }
+      }
+      removeClass = function (node: HTMLElement, className: string) {
+        const classes = node.className.split(CHAR_WHITESPACE)
+        if (array.remove(classes, className)) {
+          node.className = array.join(classes, CHAR_WHITESPACE)
+        }
       }
     }
-    removeClass = function (node: HTMLElement, className: string) {
-      const classes = node.className.split(CHAR_WHITESPACE)
-      if (array.remove(classes, className)) {
-        node.className = array.join(classes, CHAR_WHITESPACE)
-      }
-    }
-  }
 
-  // 为 IE9 以下浏览器打补丁
-  if (process.env.NODE_LEGACY) {
+    // 为 IE9 以下浏览器打补丁
+    if (process.env.NODE_LEGACY) {
 
-    if (!env.DOCUMENT.addEventListener) {
+      if (!env.DOCUMENT.addEventListener) {
 
-      const PROPERTY_CHANGE = 'propertychange'
+        const PROPERTY_CHANGE = 'propertychange'
 
-      addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-        if (type === env.EVENT_INPUT) {
-          addEventListener(
-            node,
-            PROPERTY_CHANGE,
-            // 借用 EMITTER，反正只是内部临时用一下...
-            listener[EMITTER] = function (event: any) {
-              if (event.propertyName === env.RAW_VALUE) {
+        addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
+          if (type === env.EVENT_INPUT) {
+            addEventListener(
+              node,
+              PROPERTY_CHANGE,
+              // 借用 EMITTER，反正只是内部临时用一下...
+              listener[EMITTER] = function (event: any) {
+                if (event.propertyName === env.RAW_VALUE) {
+                  event = new CustomEvent(event)
+                  event.type = env.EVENT_INPUT
+                  execute(listener, this, event)
+                }
+              }
+            )
+          }
+          else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
+            addEventListener(
+              node,
+              env.EVENT_CLICK,
+              listener[EMITTER] = function (event: any) {
                 event = new CustomEvent(event)
-                event.type = env.EVENT_INPUT
+                event.type = env.EVENT_CHANGE
                 execute(listener, this, event)
               }
-            }
-          )
+            )
+          }
+          else {
+            node.attachEvent(`on${type}`, listener)
+          }
         }
-        else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
-          addEventListener(
-            node,
-            env.EVENT_CLICK,
-            listener[EMITTER] = function (event: any) {
-              event = new CustomEvent(event)
-              event.type = env.EVENT_CHANGE
-              execute(listener, this, event)
-            }
-          )
+
+        removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
+          if (type === env.EVENT_INPUT) {
+            removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
+            delete listener[EMITTER]
+          }
+          else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
+            removeEventListener(node, env.EVENT_CLICK, listener[EMITTER])
+            delete listener[EMITTER]
+          }
+          else {
+            node.detachEvent(`on${type}`, listener)
+          }
         }
-        else {
-          node.attachEvent(`on${type}`, listener)
+
+        const isBoxElement = function (node: HTMLInputElement) {
+          return node.tagName === 'INPUT'
+            && (node.type === 'radio' || node.type === 'checkbox')
         }
-      }
 
-      removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-        if (type === env.EVENT_INPUT) {
-          removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
-          delete listener[EMITTER]
-        }
-        else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
-          removeEventListener(node, env.EVENT_CLICK, listener[EMITTER])
-          delete listener[EMITTER]
-        }
-        else {
-          node.detachEvent(`on${type}`, listener)
-        }
-      }
+        class IEEvent {
 
-      const isBoxElement = function (node: HTMLInputElement) {
-        return node.tagName === 'INPUT'
-          && (node.type === 'radio' || node.type === 'checkbox')
-      }
+          currentTarget: HTMLElement | Window | Document
 
-      class IEEvent {
+          target: HTMLElement | EventTarget
 
-        currentTarget: HTMLElement | Window | Document
+          originalEvent: Event
 
-        target: HTMLElement | EventTarget
+          constructor(event: Event, element: HTMLElement | Window | Document) {
 
-        originalEvent: Event
+            object.extend(this, event)
 
-        constructor(event: Event, element: HTMLElement | Window | Document) {
+            this.currentTarget = element
+            this.target = event.srcElement || element
+            this.originalEvent = event
 
-          object.extend(this, event)
+          }
 
-          this.currentTarget = element
-          this.target = event.srcElement || element
-          this.originalEvent = event
+          preventDefault() {
+            this.originalEvent.returnValue = env.FALSE
+          }
+
+          stopPropagation() {
+            this.originalEvent.cancelBubble = env.TRUE
+          }
 
         }
 
-        preventDefault() {
-          this.originalEvent.returnValue = env.FALSE
+        // textContent 不兼容 IE 678
+        innerText = 'innerText'
+
+        createEvent = function (event, element) {
+          return new IEEvent(event, element)
         }
 
-        stopPropagation() {
-          this.originalEvent.cancelBubble = env.TRUE
+        findElement = function (selector: string): Element | void {
+          // 去掉 #
+          if (string.codeAt(selector, 0) === 35) {
+            selector = string.slice(selector, 1)
+          }
+          else if (process.env.NODE_ENV === 'dev') {
+            logger.fatal(`"#id" is the only supported selector for legacy version.`)
+          }
+          const node = (env.DOCUMENT as Document).getElementById(selector)
+          if (node) {
+            return node
+          }
         }
 
-      }
-
-      // textContent 不兼容 IE 678
-      innerText = 'innerText'
-
-      createEvent = function (event, element) {
-        return new IEEvent(event, element)
-      }
-
-      findElement = function (selector: string): Element | void {
-        // 去掉 #
-        if (string.codeAt(selector, 0) === 35) {
-          selector = string.slice(selector, 1)
-        }
-        else if (process.env.NODE_ENV === 'dev') {
-          logger.fatal(`"#id" is the only supported selector for legacy version.`)
-        }
-        const node = (env.DOCUMENT as Document).getElementById(selector)
-        if (node) {
-          return node
-        }
       }
 
     }
 
   }
-
 }
 
 const CHAR_WHITESPACE = ' ',
