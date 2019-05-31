@@ -308,13 +308,16 @@ domApi: API = {
     }
   },
 
-  text(node: Node, text?: string, isStyle?: boolean): string | void {
+  text(node: Node, text?: string, isStyle?: boolean, isOption?: boolean): string | void {
     if (isDef(text)) {
       if (process.env.NODE_LEGACY) {
         if (isStyle && object.has(node, STYLE_SHEET)) {
           node[STYLE_SHEET].cssText = text
         }
         else {
+          if (isOption) {
+            (node as HTMLOptionElement).value = text as string
+          }
           node[innerText] = text as string
         }
       }
@@ -327,13 +330,16 @@ domApi: API = {
     }
   },
 
-  html(node: Element, html?: string, isStyle?: boolean): string | void {
+  html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
     if (isDef(html)) {
       if (process.env.NODE_LEGACY) {
         if (isStyle && object.has(node, STYLE_SHEET)) {
           node[STYLE_SHEET].cssText = html
         }
         else {
+          if (isOption) {
+            (node as HTMLOptionElement).value = html as string
+          }
           node[innerHTML] = html as string
         }
       }
