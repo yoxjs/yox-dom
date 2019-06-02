@@ -166,7 +166,7 @@ if (process.env.NODE_ENV !== 'pure') {
           if (string.codeAt(selector, 0) === 35) {
             selector = string.slice(selector, 1)
           }
-          else if (process.env.NODE_ENV === 'dev') {
+          else if (process.env.NODE_ENV === 'development') {
             logger.fatal(`"#id" is the only supported selector for legacy version.`)
           }
           const node = (env.DOCUMENT as Document).getElementById(selector)
@@ -431,7 +431,7 @@ domApi: API = {
   },
 
   addSpecialEvent(type: string, hooks: SpecialEventHooks): void {
-    if (process.env.NODE_ENV === 'dev') {
+    if (process.env.NODE_ENV === 'development') {
       if (specialEvents[type]) {
         logger.error(`Special event "${type}" is existed.`)
       }
