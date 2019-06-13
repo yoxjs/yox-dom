@@ -13,7 +13,6 @@ import * as logger from '../../yox-common/src/util/logger'
 import Emitter from '../../yox-common/src/util/Emitter'
 import CustomEvent from '../../yox-common/src/util/CustomEvent'
 
-import API from '../../yox-type/src/interface/API'
 import SpecialEventHooks from '../../yox-type/src/hooks/SpecialEvent'
 
 // 这里先写 IE9 支持的接口
@@ -37,11 +36,11 @@ removeEventListener = function (node: HTMLElement | Window | Document, type: str
 },
 
 // IE9 不支持 classList
-addClass = function (node: HTMLElement, className: string) {
+addElementClass = function (node: HTMLElement, className: string) {
   node.classList.add(className)
 },
 
-removeClass = function (node: HTMLElement, className: string) {
+removeElementClass = function (node: HTMLElement, className: string) {
   node.classList.remove(className)
 },
 
@@ -54,14 +53,14 @@ if (process.env.NODE_ENV !== 'pure') {
 
     // 此时 document.body 不一定有值，比如 script 放在 head 里
     if (!env.DOCUMENT.documentElement.classList) {
-      addClass = function (node: HTMLElement, className: string) {
+      addElementClass = function (node: HTMLElement, className: string) {
         const classes = node.className.split(CHAR_WHITESPACE)
         if (!array.has(classes, className)) {
           array.push(classes, className)
           node.className = array.join(classes, CHAR_WHITESPACE)
         }
       }
-      removeClass = function (node: HTMLElement, className: string) {
+      removeElementClass = function (node: HTMLElement, className: string) {
         const classes = node.className.split(CHAR_WHITESPACE)
         if (array.remove(classes, className)) {
           node.className = array.join(classes, CHAR_WHITESPACE)
@@ -212,243 +211,15 @@ namespaces = {
   // xlink: domain + '1999/xlink',
 },
 
-specialEvents: Record<string, SpecialEventHooks> = {},
-
-domApi: API = {
-
-  createElement(tag: string, isSvg?: boolean): Element {
-    return isSvg
-      ? (env.DOCUMENT as Document).createElementNS(namespaces.svg, tag)
-      : (env.DOCUMENT as Document).createElement(tag)
-  },
-
-  createText(text: string): Text {
-    return (env.DOCUMENT as Document).createTextNode(text)
-  },
-
-  createComment(text: string): Comment {
-    return (env.DOCUMENT as Document).createComment(text)
-  },
-
-  prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
-    if (isDef(value)) {
-      object.set(node, name, value, env.FALSE)
-    }
-    else {
-      const holder = object.get(node, name)
-      if (holder) {
-        return holder.value
-      }
-    }
-  },
-
-  removeProp(node: HTMLElement, name: string, hint?: number): void {
-    object.set(
-      node,
-      name,
-      hint === config.HINT_BOOLEAN
-        ? env.FALSE
-        : env.EMPTY_STRING,
-      env.FALSE
-    )
-  },
-
-  attr(node: HTMLElement, name: string, value?: string): string | void {
-    if (isDef(value)) {
-      node.setAttribute(name, value as string)
-    }
-    else {
-      // value 还可能是 null
-      const value = node.getAttribute(name)
-      if (value != env.NULL) {
-        return value as string
-      }
-    }
-  },
-
-  removeAttr(node: HTMLElement, name: string): void {
-    node.removeAttribute(name)
-  },
-
-  before(parentNode: Node, node: Node, beforeNode: Node): void {
-    parentNode.insertBefore(node, beforeNode)
-  },
-
-  append(parentNode: Node, node: Node): void {
-    parentNode.appendChild(node)
-  },
-
-  replace(parentNode: Node, node: Node, oldNode: Node): void {
-    parentNode.replaceChild(node, oldNode)
-  },
-
-  remove(parentNode: Node, node: Node): void {
-    parentNode.removeChild(node)
-  },
-
-  parent(node: Node): Node | void {
-    const { parentNode } = node
-    if (parentNode) {
-      return parentNode
-    }
-  },
-
-  next(node: Node): Node | void {
-    const { nextSibling } = node
-    if (nextSibling) {
-      return nextSibling
-    }
-  },
-
-  find: findElement,
-
-  tag(node: Node): string | void {
-    if (node.nodeType === 1) {
-      return string.lower((node as HTMLElement).tagName)
-    }
-  },
-
-  text(node: Node, text?: string, isStyle?: boolean, isOption?: boolean): string | void {
-    if (isDef(text)) {
-      if (process.env.NODE_LEGACY) {
-        if (isStyle && object.has(node, STYLE_SHEET)) {
-          node[STYLE_SHEET].cssText = text
-        }
-        else {
-          if (isOption) {
-            (node as HTMLOptionElement).value = text as string
-          }
-          node[innerText] = text as string
-        }
-      }
-      else {
-        node[innerText] = text as string
-      }
-    }
-    else {
-      return node[innerText]
-    }
-  },
-
-  html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
-    if (isDef(html)) {
-      if (process.env.NODE_LEGACY) {
-        if (isStyle && object.has(node, STYLE_SHEET)) {
-          node[STYLE_SHEET].cssText = html
-        }
-        else {
-          if (isOption) {
-            (node as HTMLOptionElement).value = html as string
-          }
-          node[innerHTML] = html as string
-        }
-      }
-      else {
-        node[innerHTML] = html as string
-      }
-    }
-    else {
-      return node[innerHTML]
-    }
-  },
-
-  addClass,
-
-  removeClass,
-
-  on(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
-
-    const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
-
-    nativeListeners = emitter.nativeListeners || (emitter.nativeListeners = {})
-
-    // 一个元素，相同的事件，只注册一个 native listener
-    if (!nativeListeners[type]) {
-
-      // 特殊事件
-      const special = specialEvents[type],
-
-      // 唯一的原生监听器
-      nativeListener = function (event: Event | CustomEvent) {
-
-        const customEvent = event instanceof CustomEvent
-          ? event
-          : new CustomEvent(event.type, createEvent(event, node))
-
-        if (customEvent.type !== type) {
-          customEvent.type = type
-        }
-
-        emitter.fire(type, [customEvent])
-
-      }
-
-      nativeListeners[type] = nativeListener
-
-      if (special) {
-        special.on(node, nativeListener)
-      }
-      else {
-        addEventListener(node, type, nativeListener)
-      }
-
-    }
-
-    emitter.on(type, listener)
-  },
-
-  off(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
-
-    const emitter: Emitter = node[EMITTER],
-
-    { listeners, nativeListeners } = emitter
-
-    // emitter 会根据 type 和 listener 参数进行适当的删除
-    emitter.off(type, listener)
-
-    // 如果注册的 type 事件都解绑了，则去掉原生监听器
-    if (nativeListeners && !emitter.has(type)) {
-
-      const special = specialEvents[type],
-
-      nativeListener = nativeListeners[type]
-
-      if (special) {
-        special.off(node, nativeListener)
-      }
-      else {
-        removeEventListener(node, type, nativeListener)
-      }
-
-      delete nativeListeners[type]
-
-    }
-
-    if (object.falsy(listeners)) {
-      node[EMITTER] = env.UNDEFINED
-    }
-
-  },
-
-  addSpecialEvent(type: string, hooks: SpecialEventHooks): void {
-    if (process.env.NODE_ENV === 'development') {
-      if (specialEvents[type]) {
-        logger.error(`Special event "${type}" is existed.`)
-      }
-      logger.info(`Special event "${type}" add success.`)
-    }
-    specialEvents[type] = hooks
-  },
-
-}
+specialEvents: Record<string, SpecialEventHooks> = {}
 
 specialEvents[env.EVENT_MODEL] = {
   on(node: HTMLElement | Window | Document, listener: type.nativeListener) {
     let locked = env.FALSE
-    domApi.on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
+    on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
       locked = env.TRUE
     })
-    domApi.on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: Event | CustomEvent) {
+    on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: Event | CustomEvent) {
       locked = env.FALSE
       listener(event)
     })
@@ -459,8 +230,8 @@ specialEvents[env.EVENT_MODEL] = {
     })
   },
   off(node: HTMLElement | Window | Document, listener: type.nativeListener) {
-    domApi.off(node, COMPOSITION_START, listener[COMPOSITION_START])
-    domApi.off(node, COMPOSITION_END, listener[COMPOSITION_END])
+    off(node, COMPOSITION_START, listener[COMPOSITION_START])
+    off(node, COMPOSITION_END, listener[COMPOSITION_END])
     removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
     listener[COMPOSITION_START] =
     listener[COMPOSITION_END] =
@@ -468,4 +239,226 @@ specialEvents[env.EVENT_MODEL] = {
   }
 }
 
-export default domApi
+export function createElement(tag: string, isSvg?: boolean): Element {
+  return isSvg
+    ? (env.DOCUMENT as Document).createElementNS(namespaces.svg, tag)
+    : (env.DOCUMENT as Document).createElement(tag)
+}
+
+export function createText(text: string): Text {
+  return (env.DOCUMENT as Document).createTextNode(text)
+}
+
+export function createComment(text: string): Comment {
+  return (env.DOCUMENT as Document).createComment(text)
+}
+
+export function prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
+  if (isDef(value)) {
+    object.set(node, name, value, env.FALSE)
+  }
+  else {
+    const holder = object.get(node, name)
+    if (holder) {
+      return holder.value
+    }
+  }
+}
+
+export function removeProp(node: HTMLElement, name: string, hint?: number): void {
+  object.set(
+    node,
+    name,
+    hint === config.HINT_BOOLEAN
+      ? env.FALSE
+      : env.EMPTY_STRING,
+    env.FALSE
+  )
+}
+
+export function attr(node: HTMLElement, name: string, value?: string): string | void {
+  if (isDef(value)) {
+    node.setAttribute(name, value as string)
+  }
+  else {
+    // value 还可能是 null
+    const value = node.getAttribute(name)
+    if (value != env.NULL) {
+      return value as string
+    }
+  }
+}
+
+export function removeAttr(node: HTMLElement, name: string): void {
+  node.removeAttribute(name)
+}
+
+export function before(parentNode: Node, node: Node, beforeNode: Node): void {
+  parentNode.insertBefore(node, beforeNode)
+}
+
+export function append(parentNode: Node, node: Node): void {
+  parentNode.appendChild(node)
+}
+
+export function replace(parentNode: Node, node: Node, oldNode: Node): void {
+  parentNode.replaceChild(node, oldNode)
+}
+
+export function remove(parentNode: Node, node: Node): void {
+  parentNode.removeChild(node)
+}
+
+export function parent(node: Node): Node | void {
+  const { parentNode } = node
+  if (parentNode) {
+    return parentNode
+  }
+}
+
+export function next(node: Node): Node | void {
+  const { nextSibling } = node
+  if (nextSibling) {
+    return nextSibling
+  }
+}
+
+export const find = findElement
+
+export function tag(node: Node): string | void {
+  if (node.nodeType === 1) {
+    return string.lower((node as HTMLElement).tagName)
+  }
+}
+
+export function text(node: Node, text?: string, isStyle?: boolean, isOption?: boolean): string | void {
+  if (isDef(text)) {
+    if (process.env.NODE_LEGACY) {
+      if (isStyle && object.has(node, STYLE_SHEET)) {
+        node[STYLE_SHEET].cssText = text
+      }
+      else {
+        if (isOption) {
+          (node as HTMLOptionElement).value = text as string
+        }
+        node[innerText] = text as string
+      }
+    }
+    else {
+      node[innerText] = text as string
+    }
+  }
+  else {
+    return node[innerText]
+  }
+}
+
+export function html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
+  if (isDef(html)) {
+    if (process.env.NODE_LEGACY) {
+      if (isStyle && object.has(node, STYLE_SHEET)) {
+        node[STYLE_SHEET].cssText = html
+      }
+      else {
+        if (isOption) {
+          (node as HTMLOptionElement).value = html as string
+        }
+        node[innerHTML] = html as string
+      }
+    }
+    else {
+      node[innerHTML] = html as string
+    }
+  }
+  else {
+    return node[innerHTML]
+  }
+}
+
+export const addClass = addElementClass
+
+export const removeClass = removeElementClass
+
+export function on(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
+
+  const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
+
+  nativeListeners = emitter.nativeListeners || (emitter.nativeListeners = {})
+
+  // 一个元素，相同的事件，只注册一个 native listener
+  if (!nativeListeners[type]) {
+
+    // 特殊事件
+    const special = specialEvents[type],
+
+    // 唯一的原生监听器
+    nativeListener = function (event: Event | CustomEvent) {
+
+      const customEvent = event instanceof CustomEvent
+        ? event
+        : new CustomEvent(event.type, createEvent(event, node))
+
+      if (customEvent.type !== type) {
+        customEvent.type = type
+      }
+
+      emitter.fire(type, [customEvent])
+
+    }
+
+    nativeListeners[type] = nativeListener
+
+    if (special) {
+      special.on(node, nativeListener)
+    }
+    else {
+      addEventListener(node, type, nativeListener)
+    }
+
+  }
+
+  emitter.on(type, listener)
+}
+
+export function off(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
+
+  const emitter: Emitter = node[EMITTER],
+
+  { listeners, nativeListeners } = emitter
+
+  // emitter 会根据 type 和 listener 参数进行适当的删除
+  emitter.off(type, listener)
+
+  // 如果注册的 type 事件都解绑了，则去掉原生监听器
+  if (nativeListeners && !emitter.has(type)) {
+
+    const special = specialEvents[type],
+
+    nativeListener = nativeListeners[type]
+
+    if (special) {
+      special.off(node, nativeListener)
+    }
+    else {
+      removeEventListener(node, type, nativeListener)
+    }
+
+    delete nativeListeners[type]
+
+  }
+
+  if (object.falsy(listeners)) {
+    node[EMITTER] = env.UNDEFINED
+  }
+
+}
+
+export function addSpecialEvent(type: string, hooks: SpecialEventHooks): void {
+  if (process.env.NODE_ENV === 'development') {
+    if (specialEvents[type]) {
+      logger.error(`Special event "${type}" is existed.`)
+    }
+    logger.info(`Special event "${type}" add success.`)
+  }
+  specialEvents[type] = hooks
+}
