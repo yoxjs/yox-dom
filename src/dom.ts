@@ -13,7 +13,7 @@ import * as logger from '../../yox-common/src/util/logger'
 import Emitter from '../../yox-common/src/util/Emitter'
 import CustomEvent from '../../yox-common/src/util/CustomEvent'
 
-import SpecialEventHooks from '../../yox-type/src/hooks/SpecialEvent'
+import { SpecialEventHooks } from '../../yox-type/src/class'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
