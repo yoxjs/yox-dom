@@ -1,4 +1,12 @@
-import * as type from '../../yox-type/src/type'
+import {
+  listener,
+  nativeListener,
+} from '../../yox-type/src/type'
+
+import {
+  SpecialEventHooks,
+} from '../../yox-type/src/global'
+
 import * as config from '../../yox-config/src/config'
 
 import isDef from '../../yox-common/src/function/isDef'
@@ -13,7 +21,6 @@ import * as logger from '../../yox-common/src/util/logger'
 import Emitter from '../../yox-common/src/util/Emitter'
 import CustomEvent from '../../yox-common/src/util/CustomEvent'
 
-import { SpecialEventHooks } from '../../yox-type/src/class'
 
 // 这里先写 IE9 支持的接口
 let innerText = 'textContent',
@@ -214,7 +221,7 @@ namespaces = {
 specialEvents: Record<string, SpecialEventHooks> = {}
 
 specialEvents[env.EVENT_MODEL] = {
-  on(node: HTMLElement | Window | Document, listener: type.nativeListener) {
+  on(node: HTMLElement | Window | Document, listener: nativeListener) {
     let locked = env.FALSE
     on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
       locked = env.TRUE
@@ -229,7 +236,7 @@ specialEvents[env.EVENT_MODEL] = {
       }
     })
   },
-  off(node: HTMLElement | Window | Document, listener: type.nativeListener) {
+  off(node: HTMLElement | Window | Document, listener: nativeListener) {
     off(node, COMPOSITION_START, listener[COMPOSITION_START])
     off(node, COMPOSITION_END, listener[COMPOSITION_END])
     removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
@@ -379,7 +386,7 @@ export const addClass = addElementClass
 
 export const removeClass = removeElementClass
 
-export function on(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
+export function on(node: HTMLElement | Window | Document, type: string, listener: listener): void {
 
   const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -420,7 +427,7 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
   emitter.on(type, listener)
 }
 
-export function off(node: HTMLElement | Window | Document, type: string, listener: type.listener): void {
+export function off(node: HTMLElement | Window | Document, type: string, listener: listener): void {
 
   const emitter: Emitter = node[EMITTER],
 
