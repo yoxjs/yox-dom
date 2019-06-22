@@ -1,9 +1,6 @@
 import {
   listener,
   nativeListener,
-} from '../../yox-type/src/type'
-
-import {
   SpecialEventHooks,
 } from '../../yox-type/src/global'
 
