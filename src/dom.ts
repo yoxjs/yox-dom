@@ -383,9 +383,9 @@ export const addClass = addElementClass
 
 export const removeClass = removeElementClass
 
-export function on(node: HTMLElement | Window | Document, type: string, listener: Listener<unknown>): void {
+export function on(node: HTMLElement | Window | Document, type: string, listener: Listener<null>): void {
 
-  const emitter: Emitter<unknown> = node[EMITTER] || (node[EMITTER] = new Emitter()),
+  const emitter: Emitter<null> = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
   nativeListeners = emitter.nativeListeners || (emitter.nativeListeners = {})
 
@@ -424,9 +424,9 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
   emitter.on(type, listener)
 }
 
-export function off(node: HTMLElement | Window | Document, type: string, listener: Listener<unknown>): void {
+export function off(node: HTMLElement | Window | Document, type: string, listener: Listener<null>): void {
 
-  const emitter: Emitter<unknown> = node[EMITTER],
+  const emitter: Emitter<null> = node[EMITTER],
 
   { listeners, nativeListeners } = emitter
 
