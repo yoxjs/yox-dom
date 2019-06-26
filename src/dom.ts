@@ -1,6 +1,6 @@
 import {
-  listener,
-  nativeListener,
+  Listener,
+  NativeListener,
   SpecialEventHooks,
 } from '../../yox-type/src/global'
 
@@ -218,7 +218,7 @@ namespaces = {
 specialEvents: Record<string, SpecialEventHooks> = {}
 
 specialEvents[env.EVENT_MODEL] = {
-  on(node: HTMLElement | Window | Document, listener: nativeListener) {
+  on(node: HTMLElement | Window | Document, listener: NativeListener) {
     let locked = env.FALSE
     on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
       locked = env.TRUE
@@ -233,7 +233,7 @@ specialEvents[env.EVENT_MODEL] = {
       }
     })
   },
-  off(node: HTMLElement | Window | Document, listener: nativeListener) {
+  off(node: HTMLElement | Window | Document, listener: NativeListener) {
     off(node, COMPOSITION_START, listener[COMPOSITION_START])
     off(node, COMPOSITION_END, listener[COMPOSITION_END])
     removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
@@ -383,7 +383,7 @@ export const addClass = addElementClass
 
 export const removeClass = removeElementClass
 
-export function on(node: HTMLElement | Window | Document, type: string, listener: listener): void {
+export function on(node: HTMLElement | Window | Document, type: string, listener: Listener): void {
 
   const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -424,7 +424,7 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
   emitter.on(type, listener)
 }
 
-export function off(node: HTMLElement | Window | Document, type: string, listener: listener): void {
+export function off(node: HTMLElement | Window | Document, type: string, listener: Listener): void {
 
   const emitter: Emitter = node[EMITTER],
 
