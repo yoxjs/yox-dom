@@ -1,8 +1,11 @@
 import {
   Listener,
   NativeListener,
+} from '../../yox-type/src/type'
+
+import {
   SpecialEventHooks,
-} from '../../yox-type/src/global'
+} from '../../yox-type/src/hooks'
 
 import * as config from '../../yox-config/src/config'
 
