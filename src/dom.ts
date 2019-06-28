@@ -386,7 +386,7 @@ export const addClass = addElementClass
 
 export const removeClass = removeElementClass
 
-export function on(node: HTMLElement | Window | Document, type: string, listener: Listener): void {
+export function on(node: HTMLElement | Window | Document, type: string, listener: Listener, context?: any): void {
 
   const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
 
@@ -424,7 +424,14 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
 
   }
 
-  emitter.on(type, listener)
+  emitter.on(
+    type,
+    {
+      fn: listener,
+      ctx: context,
+    }
+  )
+
 }
 
 export function off(node: HTMLElement | Window | Document, type: string, listener: Listener): void {
