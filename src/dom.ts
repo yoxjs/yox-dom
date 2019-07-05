@@ -7,7 +7,9 @@ import {
   SpecialEventHooks,
 } from '../../yox-type/src/hooks'
 
-import * as config from '../../yox-config/src/config'
+import {
+  HINT_BOOLEAN
+} from '../../yox-config/src/config'
 
 import isDef from '../../yox-common/src/function/isDef'
 import execute from '../../yox-common/src/function/execute'
@@ -276,7 +278,7 @@ export function removeProp(node: HTMLElement, name: string, hint?: number): void
   object.set(
     node,
     name,
-    hint === config.HINT_BOOLEAN
+    hint === HINT_BOOLEAN
       ? env.FALSE
       : env.EMPTY_STRING,
     env.FALSE
