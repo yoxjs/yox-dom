@@ -436,7 +436,7 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
 
 }
 
-export function off(node: HTMLElement | Window | Document, type: string, listener: Listener): void {
+export function off(node: HTMLElement | Window | Document, type: string, listener: Function): void {
 
   const emitter: Emitter = node[EMITTER],
 
