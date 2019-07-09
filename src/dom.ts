@@ -175,7 +175,7 @@ if (process.env.NODE_ENV !== 'pure') {
             selector = string.slice(selector, 1)
           }
           else if (process.env.NODE_ENV === 'development') {
-            logger.fatal(`"#id" is the only supported selector for legacy version.`)
+            logger.fatal(`The id selector, such as "#id", is the only supported selector for legacy version.`)
           }
           const node = (env.DOCUMENT as Document).getElementById(selector)
           if (node) {
@@ -472,9 +472,9 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
 export function addSpecialEvent(type: string, hooks: SpecialEventHooks): void {
   if (process.env.NODE_ENV === 'development') {
     if (specialEvents[type]) {
-      logger.error(`Special event "${type}" is existed.`)
+      logger.fatal(`The special event "${type}" is existed.`)
     }
-    logger.info(`Special event "${type}" add success.`)
+    logger.info(`The special event "${type}" is added successfully.`)
   }
   specialEvents[type] = hooks
 }
