@@ -1,11 +1,11 @@
 import {
   Listener,
   NativeListener,
-} from 'yox-type/src/type'
+} from 'yox-common/src/type/type'
 
 import {
   SpecialEventHooks,
-} from 'yox-type/src/hooks'
+} from 'yox-common/src/type/hooks'
 
 import {
   HINT_BOOLEAN
