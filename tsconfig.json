@@ -9,6 +9,9 @@
     },
     {
       "path": "../yox-common"
+    },
+    {
+      "path": "../yox-type"
     }
   ],
   "include": [

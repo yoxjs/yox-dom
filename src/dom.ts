@@ -1,27 +1,31 @@
 import {
   Listener,
   NativeListener,
-} from 'yox-common/src/type/type'
+} from 'yox-type/src/type'
 
 import {
   SpecialEventHooks,
-} from 'yox-common/src/type/hooks'
+} from 'yox-type/src/hooks'
+
+import {
+  CustomEvent,
+} from 'yox-type/src/yox'
 
 import {
   HINT_BOOLEAN
 } from 'yox-config/src/config'
 
+import * as constant from 'yox-type/src/constant'
+
 import isDef from 'yox-common/src/function/isDef'
 import execute from 'yox-common/src/function/execute'
 
-import * as env from 'yox-common/src/util/env'
 import * as array from 'yox-common/src/util/array'
 import * as string from 'yox-common/src/util/string'
 import * as object from 'yox-common/src/util/object'
 import * as logger from 'yox-common/src/util/logger'
 
 import Emitter from 'yox-common/src/util/Emitter'
-import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 
 // 这里先写 IE9 支持的接口
@@ -30,18 +34,18 @@ let innerText = 'textContent',
 innerHTML = 'innerHTML',
 
 findElement = function (selector: string): Element | void {
-  const node = (env.DOCUMENT as Document).querySelector(selector)
+  const node = (constant.DOCUMENT as Document).querySelector(selector)
   if (node) {
     return node
   }
 },
 
 addEventListener = function (node: HTMLElement | Window | Document, type: string, listener: (event: Event) => void) {
-  node.addEventListener(type, listener, env.FALSE)
+  node.addEventListener(type, listener, constant.FALSE)
 },
 
 removeEventListener = function (node: HTMLElement | Window | Document, type: string, listener: (event: Event) => void) {
-  node.removeEventListener(type, listener, env.FALSE)
+  node.removeEventListener(type, listener, constant.FALSE)
 },
 
 // IE9 不支持 classList
@@ -58,10 +62,10 @@ createEvent = function (event: any, node: HTMLElement | Window | Document): any 
 }
 
 if (process.env.NODE_ENV !== 'pure') {
-  if (env.DOCUMENT) {
+  if (constant.DOCUMENT) {
 
     // 此时 document.body 不一定有值，比如 script 放在 head 里
-    if (!env.DOCUMENT.documentElement.classList) {
+    if (!constant.DOCUMENT.documentElement.classList) {
       addElementClass = function (node: HTMLElement, className: string) {
         const classes = node.className.split(CHAR_WHITESPACE)
         if (!array.has(classes, className)) {
@@ -80,32 +84,32 @@ if (process.env.NODE_ENV !== 'pure') {
     // 为 IE9 以下浏览器打补丁
     if (process.env.NODE_LEGACY) {
 
-      if (!env.DOCUMENT.addEventListener) {
+      if (!constant.DOCUMENT.addEventListener) {
 
         const PROPERTY_CHANGE = 'propertychange'
 
         addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-          if (type === env.EVENT_INPUT) {
+          if (type === constant.EVENT_INPUT) {
             addEventListener(
               node,
               PROPERTY_CHANGE,
               // 借用 EMITTER，反正只是内部临时用一下...
               listener[EMITTER] = function (event: any) {
-                if (event.propertyName === env.RAW_VALUE) {
+                if (event.propertyName === constant.RAW_VALUE) {
                   event = new CustomEvent(event)
-                  event.type = env.EVENT_INPUT
+                  event.type = constant.EVENT_INPUT
                   execute(listener, this, event)
                 }
               }
             )
           }
-          else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
+          else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
             addEventListener(
               node,
-              env.EVENT_CLICK,
+              constant.EVENT_CLICK,
               listener[EMITTER] = function (event: any) {
                 event = new CustomEvent(event)
-                event.type = env.EVENT_CHANGE
+                event.type = constant.EVENT_CHANGE
                 execute(listener, this, event)
               }
             )
@@ -116,12 +120,12 @@ if (process.env.NODE_ENV !== 'pure') {
         }
 
         removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-          if (type === env.EVENT_INPUT) {
+          if (type === constant.EVENT_INPUT) {
             removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
             delete listener[EMITTER]
           }
-          else if (type === env.EVENT_CHANGE && isBoxElement(node)) {
-            removeEventListener(node, env.EVENT_CLICK, listener[EMITTER])
+          else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
+            removeEventListener(node, constant.EVENT_CLICK, listener[EMITTER])
             delete listener[EMITTER]
           }
           else {
@@ -153,11 +157,11 @@ if (process.env.NODE_ENV !== 'pure') {
           }
 
           preventDefault() {
-            this.originalEvent.returnValue = env.FALSE
+            this.originalEvent.returnValue = constant.FALSE
           }
 
           stopPropagation() {
-            this.originalEvent.cancelBubble = env.TRUE
+            this.originalEvent.cancelBubble = constant.TRUE
           }
 
         }
@@ -177,7 +181,7 @@ if (process.env.NODE_ENV !== 'pure') {
           else if (process.env.NODE_ENV === 'development') {
             logger.fatal(`The id selector, such as "#id", is the only supported selector for legacy version.`)
           }
-          const node = (env.DOCUMENT as Document).getElementById(selector)
+          const node = (constant.DOCUMENT as Document).getElementById(selector)
           if (node) {
             return node
           }
@@ -222,17 +226,17 @@ namespaces = {
 
 specialEvents: Record<string, SpecialEventHooks> = {}
 
-specialEvents[env.EVENT_MODEL] = {
+specialEvents[constant.EVENT_MODEL] = {
   on(node: HTMLElement | Window | Document, listener: NativeListener) {
-    let locked = env.FALSE
+    let locked = constant.FALSE
     on(node, COMPOSITION_START, listener[COMPOSITION_START] = function () {
-      locked = env.TRUE
+      locked = constant.TRUE
     })
     on(node, COMPOSITION_END, listener[COMPOSITION_END] = function (event: Event | CustomEvent) {
-      locked = env.FALSE
+      locked = constant.FALSE
       listener(event)
     })
-    addEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT] = function (event: Event | CustomEvent) {
+    addEventListener(node, constant.EVENT_INPUT, listener[constant.EVENT_INPUT] = function (event: Event | CustomEvent) {
       if (!locked) {
         listener(event)
       }
@@ -241,30 +245,30 @@ specialEvents[env.EVENT_MODEL] = {
   off(node: HTMLElement | Window | Document, listener: NativeListener) {
     off(node, COMPOSITION_START, listener[COMPOSITION_START])
     off(node, COMPOSITION_END, listener[COMPOSITION_END])
-    removeEventListener(node, env.EVENT_INPUT, listener[env.EVENT_INPUT])
+    removeEventListener(node, constant.EVENT_INPUT, listener[constant.EVENT_INPUT])
     listener[COMPOSITION_START] =
     listener[COMPOSITION_END] =
-    listener[env.EVENT_INPUT] = env.UNDEFINED
+    listener[constant.EVENT_INPUT] = constant.UNDEFINED
   }
 }
 
 export function createElement(tag: string, isSvg?: boolean): Element {
   return isSvg
-    ? (env.DOCUMENT as Document).createElementNS(namespaces.svg, tag)
-    : (env.DOCUMENT as Document).createElement(tag)
+    ? (constant.DOCUMENT as Document).createElementNS(namespaces.svg, tag)
+    : (constant.DOCUMENT as Document).createElement(tag)
 }
 
 export function createText(text: string): Text {
-  return (env.DOCUMENT as Document).createTextNode(text)
+  return (constant.DOCUMENT as Document).createTextNode(text)
 }
 
 export function createComment(text: string): Comment {
-  return (env.DOCUMENT as Document).createComment(text)
+  return (constant.DOCUMENT as Document).createComment(text)
 }
 
 export function prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
   if (isDef(value)) {
-    object.set(node, name, value, env.FALSE)
+    object.set(node, name, value, constant.FALSE)
   }
   else {
     const holder = object.get(node, name)
@@ -279,9 +283,9 @@ export function removeProp(node: HTMLElement, name: string, hint?: number): void
     node,
     name,
     hint === HINT_BOOLEAN
-      ? env.FALSE
-      : env.EMPTY_STRING,
-    env.FALSE
+      ? constant.FALSE
+      : constant.EMPTY_STRING,
+    constant.FALSE
   )
 }
 
@@ -292,7 +296,7 @@ export function attr(node: HTMLElement, name: string, value?: string): string | 
   else {
     // value 还可能是 null
     const value = node.getAttribute(name)
-    if (value != env.NULL) {
+    if (value != constant.NULL) {
       return value as string
     }
   }
@@ -464,7 +468,7 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
   }
 
   if (object.falsy(listeners)) {
-    node[EMITTER] = env.UNDEFINED
+    node[EMITTER] = constant.UNDEFINED
   }
 
 }
