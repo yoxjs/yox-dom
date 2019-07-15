@@ -1,27 +1,27 @@
 import {
   Listener,
   NativeListener,
-} from '../../yox-type/src/type'
+} from 'yox-type/src/type'
 
 import {
   SpecialEventHooks,
-} from '../../yox-type/src/hooks'
+} from 'yox-type/src/hooks'
 
 import {
   HINT_BOOLEAN
-} from '../../yox-config/src/config'
+} from 'yox-config/src/config'
 
-import isDef from '../../yox-common/src/function/isDef'
-import execute from '../../yox-common/src/function/execute'
+import isDef from 'yox-common/src/function/isDef'
+import execute from 'yox-common/src/function/execute'
 
-import * as env from '../../yox-common/src/util/env'
-import * as array from '../../yox-common/src/util/array'
-import * as string from '../../yox-common/src/util/string'
-import * as object from '../../yox-common/src/util/object'
-import * as logger from '../../yox-common/src/util/logger'
+import * as env from 'yox-common/src/util/env'
+import * as array from 'yox-common/src/util/array'
+import * as string from 'yox-common/src/util/string'
+import * as object from 'yox-common/src/util/object'
+import * as logger from 'yox-common/src/util/logger'
 
-import Emitter from '../../yox-common/src/util/Emitter'
-import CustomEvent from '../../yox-common/src/util/CustomEvent'
+import Emitter from 'yox-common/src/util/Emitter'
+import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 
 // 这里先写 IE9 支持的接口
