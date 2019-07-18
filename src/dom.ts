@@ -8,10 +8,6 @@ import {
 } from 'yox-type/src/hooks'
 
 import {
-  CustomEvent,
-} from 'yox-type/src/yox'
-
-import {
   HINT_BOOLEAN
 } from 'yox-config/src/config'
 
@@ -26,6 +22,7 @@ import * as object from 'yox-common/src/util/object'
 import * as logger from 'yox-common/src/util/logger'
 
 import Emitter from 'yox-common/src/util/Emitter'
+import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 
 // 这里先写 IE9 支持的接口
