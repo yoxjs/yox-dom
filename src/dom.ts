@@ -8,6 +8,7 @@ import {
 } from 'yox-type/src/hooks'
 
 import {
+  HINT_NUMBER,
   HINT_BOOLEAN,
 } from 'yox-config/src/config'
 
@@ -281,7 +282,9 @@ export function removeProp(node: HTMLElement, name: string, hint?: number): void
     name,
     hint === HINT_BOOLEAN
       ? constant.FALSE
-      : constant.EMPTY_STRING,
+      : hint === HINT_NUMBER
+        ? 0
+        : constant.EMPTY_STRING,
     constant.FALSE
   )
 }
