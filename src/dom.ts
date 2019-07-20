@@ -8,7 +8,7 @@ import {
 } from 'yox-type/src/hooks'
 
 import {
-  HINT_BOOLEAN
+  HINT_BOOLEAN,
 } from 'yox-config/src/config'
 
 import * as constant from 'yox-type/src/constant'
@@ -29,6 +29,10 @@ import CustomEvent from 'yox-common/src/util/CustomEvent'
 let innerText = 'textContent',
 
 innerHTML = 'innerHTML',
+
+createEvent = function (event: any, node: HTMLElement | Window | Document): any {
+  return event
+},
 
 findElement = function (selector: string): Element | void {
   const node = (constant.DOCUMENT as Document).querySelector(selector)
@@ -52,10 +56,6 @@ addElementClass = function (node: HTMLElement, className: string) {
 
 removeElementClass = function (node: HTMLElement, className: string) {
   node.classList.remove(className)
-},
-
-createEvent = function (event: any, node: HTMLElement | Window | Document): any {
-  return event
 }
 
 if (process.env.NODE_ENV !== 'pure') {
@@ -83,54 +83,9 @@ if (process.env.NODE_ENV !== 'pure') {
 
       if (!constant.DOCUMENT.addEventListener) {
 
-        const PROPERTY_CHANGE = 'propertychange'
+        const PROPERTY_CHANGE = 'propertychange',
 
-        addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-          if (type === constant.EVENT_INPUT) {
-            addEventListener(
-              node,
-              PROPERTY_CHANGE,
-              // 借用 EMITTER，反正只是内部临时用一下...
-              listener[EMITTER] = function (event: any) {
-                if (event.propertyName === constant.RAW_VALUE) {
-                  event = new CustomEvent(event)
-                  event.type = constant.EVENT_INPUT
-                  execute(listener, this, event)
-                }
-              }
-            )
-          }
-          else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
-            addEventListener(
-              node,
-              constant.EVENT_CLICK,
-              listener[EMITTER] = function (event: any) {
-                event = new CustomEvent(event)
-                event.type = constant.EVENT_CHANGE
-                execute(listener, this, event)
-              }
-            )
-          }
-          else {
-            node.attachEvent(`on${type}`, listener)
-          }
-        }
-
-        removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
-          if (type === constant.EVENT_INPUT) {
-            removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
-            delete listener[EMITTER]
-          }
-          else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
-            removeEventListener(node, constant.EVENT_CLICK, listener[EMITTER])
-            delete listener[EMITTER]
-          }
-          else {
-            node.detachEvent(`on${type}`, listener)
-          }
-        }
-
-        const isBoxElement = function (node: HTMLInputElement) {
+        isBoxElement = function (node: HTMLInputElement) {
           return node.tagName === 'INPUT'
             && (node.type === 'radio' || node.type === 'checkbox')
         }
@@ -181,6 +136,51 @@ if (process.env.NODE_ENV !== 'pure') {
           const node = (constant.DOCUMENT as Document).getElementById(selector)
           if (node) {
             return node
+          }
+        }
+
+        addEventListener = function (node: any, type: string, listener: (event: Event) => void) {
+          if (type === constant.EVENT_INPUT) {
+            addEventListener(
+              node,
+              PROPERTY_CHANGE,
+              // 借用 EMITTER，反正只是内部临时用一下...
+              listener[EMITTER] = function (event: any) {
+                if (event.propertyName === constant.RAW_VALUE) {
+                  event = new CustomEvent(event)
+                  event.type = constant.EVENT_INPUT
+                  execute(listener, this, event)
+                }
+              }
+            )
+          }
+          else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
+            addEventListener(
+              node,
+              constant.EVENT_CLICK,
+              listener[EMITTER] = function (event: any) {
+                event = new CustomEvent(event)
+                event.type = constant.EVENT_CHANGE
+                execute(listener, this, event)
+              }
+            )
+          }
+          else {
+            node.attachEvent(`on${type}`, listener)
+          }
+        }
+
+        removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
+          if (type === constant.EVENT_INPUT) {
+            removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
+            delete listener[EMITTER]
+          }
+          else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
+            removeEventListener(node, constant.EVENT_CLICK, listener[EMITTER])
+            delete listener[EMITTER]
+          }
+          else {
+            node.detachEvent(`on${type}`, listener)
           }
         }
 
@@ -294,7 +294,7 @@ export function attr(node: HTMLElement, name: string, value?: string): string | 
     // value 还可能是 null
     const value = node.getAttribute(name)
     if (value != constant.NULL) {
-      return value as string
+      return value
     }
   }
 }
@@ -473,7 +473,7 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
 export function addSpecialEvent(type: string, hooks: SpecialEventHooks): void {
   if (process.env.NODE_ENV === 'development') {
     if (specialEvents[type]) {
-      logger.fatal(`The special event "${type}" is existed.`)
+      logger.fatal(`The special event "${type}" already exists.`)
     }
     logger.info(`The special event "${type}" is added successfully.`)
   }
