@@ -1,5 +1,6 @@
 import * as domApi from 'yox-dom/src/dom'
 import * as config from 'yox-config/src/config'
+import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 test("createElement/tag", () => {
 
@@ -288,7 +289,7 @@ test("text/html", () => {
 
 })
 
-test("addClass/removecLASS", () => {
+test("addClass/removeClass", () => {
 
   const element = domApi.createElement('div') as HTMLElement
 
@@ -312,5 +313,32 @@ test("addClass/removecLASS", () => {
 
   domApi.removeClass(element, 'c')
   expect(element.className).toBe('')
+
+})
+
+test("on/off", () => {
+
+  const element = domApi.createElement('div') as HTMLElement
+
+  let fired = 0, isCustomEvent = false, isClick = false, context: any
+
+  const listener = function (e: any) {
+    fired++
+    isCustomEvent = e instanceof CustomEvent
+    isClick = e.type === 'click' && e.originalEvent.type === 'click'
+    context = this
+  }
+
+  domApi.on(element, 'click', listener, listener)
+  element.click()
+
+  expect(fired).toBe(1)
+  expect(isCustomEvent).toBe(true)
+  expect(isClick).toBe(true)
+  expect(context).toBe(listener)
+
+  domApi.off(element, 'click', listener)
+  element.click()
+  expect(fired).toBe(1)
 
 })
