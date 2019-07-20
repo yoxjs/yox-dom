@@ -342,3 +342,40 @@ test("on/off", () => {
   expect(fired).toBe(1)
 
 })
+
+test("addSpecialEvent", () => {
+
+  const element = domApi.createElement('div') as HTMLElement
+
+  domApi.addSpecialEvent('tap', {
+    on: function (element, listener) {
+      domApi.on(element, 'click', listener)
+    },
+    off: function (element, listener) {
+      domApi.off(element, 'click', listener)
+    }
+  })
+
+  let fired = 0, isCustomEvent = false, isTap = false, context: any
+
+  const listener = function (e: any) {
+    fired++
+    isCustomEvent = e instanceof CustomEvent
+    // 保留原始事件的名称
+    isTap = e.type === 'tap' && e.originalEvent.type === 'click'
+    context = this
+  }
+
+  domApi.on(element, 'tap', listener, listener)
+  element.click()
+
+  expect(fired).toBe(1)
+  expect(isCustomEvent).toBe(true)
+  expect(isTap).toBe(true)
+  expect(context).toBe(listener)
+
+  domApi.off(element, 'tap', listener)
+  element.click()
+  expect(fired).toBe(1)
+
+})
