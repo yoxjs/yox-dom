@@ -7,8 +7,6 @@ import {
   SpecialEventHooks,
 } from 'yox-type/src/hooks'
 
-import * as constant from 'yox-type/src/constant'
-
 import isDef from 'yox-common/src/function/isDef'
 import execute from 'yox-common/src/function/execute'
 
@@ -16,6 +14,7 @@ import * as array from 'yox-common/src/util/array'
 import * as string from 'yox-common/src/util/string'
 import * as object from 'yox-common/src/util/object'
 import * as logger from 'yox-common/src/util/logger'
+import * as constant from 'yox-common/src/util/constant'
 
 import Emitter from 'yox-common/src/util/Emitter'
 import CustomEvent from 'yox-common/src/util/CustomEvent'
