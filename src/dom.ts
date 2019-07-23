@@ -7,11 +7,6 @@ import {
   SpecialEventHooks,
 } from 'yox-type/src/hooks'
 
-import {
-  HINT_NUMBER,
-  HINT_BOOLEAN,
-} from 'yox-config/src/config'
-
 import * as constant from 'yox-type/src/constant'
 
 import isDef from 'yox-common/src/function/isDef'
@@ -276,16 +271,11 @@ export function prop(node: HTMLElement, name: string, value?: string | number | 
   }
 }
 
-export function removeProp(node: HTMLElement, name: string, hint?: number): void {
+export function removeProp(node: HTMLElement, name: string): void {
   object.set(
     node,
     name,
-    hint === HINT_BOOLEAN
-      ? constant.FALSE
-      : hint === HINT_NUMBER
-        ? 0
-        : constant.EMPTY_STRING,
-    constant.FALSE
+    constant.UNDEFINED
   )
 }
 

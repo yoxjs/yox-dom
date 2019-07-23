@@ -1,5 +1,4 @@
 import * as domApi from 'yox-dom/src/dom'
-import * as config from 'yox-config/src/config'
 import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 test("createElement/tag", () => {
@@ -85,7 +84,7 @@ test("removeProp", () => {
   expect(element.type).toBe('number')
   expect(domApi.prop(element, 'type')).toBe('number')
 
-  domApi.removeProp(element, 'type', config.HINT_STRING)
+  domApi.removeProp(element, 'type')
   expect(element.type).toBe(domApi.prop(element, 'type'))
   expect(element.type).not.toBe('number')
 
@@ -97,7 +96,7 @@ test("removeProp", () => {
   expect(element.disabled).toBe(true)
   expect(domApi.prop(element, 'disabled')).toBe(true)
 
-  domApi.removeProp(element, 'disabled', config.HINT_BOOLEAN)
+  domApi.removeProp(element, 'disabled')
   expect(element.disabled).toBe(domApi.prop(element, 'disabled'))
   expect(element.disabled).toBe(false)
 
@@ -108,9 +107,9 @@ test("removeProp", () => {
   expect(element.width).toBe(100)
   expect(domApi.prop(element, 'width')).toBe(100)
 
-  domApi.removeProp(element, 'width', config.HINT_NUMBER)
+  domApi.removeProp(element, 'width')
   expect(element.width).toBe(domApi.prop(element, 'width'))
-  expect(element.width).toBe(0)
+  expect(element.width).toBe(undefined)
 
 
 
@@ -119,9 +118,9 @@ test("removeProp", () => {
   expect(element['xxx']).toBe(100)
   expect(domApi.prop(element, 'xxx')).toBe(100)
 
-  domApi.removeProp(element, 'xxx', config.HINT_NUMBER)
+  domApi.removeProp(element, 'xxx')
   expect(element['xxx']).toBe(domApi.prop(element, 'xxx'))
-  expect(element['xxx']).toBe(0)
+  expect(element['xxx']).toBe(undefined)
 
 
   domApi.prop(element, 'yyy', true)
@@ -129,9 +128,9 @@ test("removeProp", () => {
   expect(element['yyy']).toBe(true)
   expect(domApi.prop(element, 'yyy')).toBe(true)
 
-  domApi.removeProp(element, 'yyy', config.HINT_BOOLEAN)
+  domApi.removeProp(element, 'yyy')
   expect(element['yyy']).toBe(domApi.prop(element, 'yyy'))
-  expect(element['yyy']).toBe(false)
+  expect(element['yyy']).toBe(undefined)
 
 
 
@@ -141,9 +140,9 @@ test("removeProp", () => {
   expect(element['zzz']).toBe('123')
   expect(domApi.prop(element, 'zzz')).toBe('123')
 
-  domApi.removeProp(element, 'zzz', config.HINT_STRING)
+  domApi.removeProp(element, 'zzz')
   expect(element['zzz']).toBe(domApi.prop(element, 'zzz'))
-  expect(element['zzz']).toBe('')
+  expect(element['zzz']).toBe(undefined)
 
 })
 
