@@ -7,7 +7,6 @@ import {
   SpecialEventHooks,
 } from 'yox-type/src/hooks'
 
-import isDef from 'yox-common/src/function/isDef'
 import execute from 'yox-common/src/function/execute'
 
 import * as array from 'yox-common/src/util/array'
@@ -259,7 +258,7 @@ export function createComment(text: string): Comment {
 }
 
 export function prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
-  if (isDef(value)) {
+  if (value !== constant.UNDEFINED) {
     object.set(node, name, value, constant.FALSE)
   }
   else {
@@ -279,7 +278,7 @@ export function removeProp(node: HTMLElement, name: string): void {
 }
 
 export function attr(node: HTMLElement, name: string, value?: string): string | void {
-  if (isDef(value)) {
+  if (value !== constant.UNDEFINED) {
     node.setAttribute(name, value as string)
   }
   else {
@@ -334,7 +333,7 @@ export function tag(node: Node): string | void {
 }
 
 export function text(node: Node, text?: string, isStyle?: boolean, isOption?: boolean): string | void {
-  if (isDef(text)) {
+  if (text !== constant.UNDEFINED) {
     if (process.env.NODE_LEGACY) {
       if (isStyle && object.has(node, STYLE_SHEET)) {
         node[STYLE_SHEET].cssText = text
@@ -356,7 +355,7 @@ export function text(node: Node, text?: string, isStyle?: boolean, isOption?: bo
 }
 
 export function html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
-  if (isDef(html)) {
+  if (html !== constant.UNDEFINED) {
     if (process.env.NODE_LEGACY) {
       if (isStyle && object.has(node, STYLE_SHEET)) {
         node[STYLE_SHEET].cssText = html
