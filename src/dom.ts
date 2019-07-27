@@ -19,8 +19,10 @@ import Emitter from 'yox-common/src/util/Emitter'
 import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 
+let guid = 0,
+
 // 这里先写 IE9 支持的接口
-let innerText = 'textContent',
+innerText = 'textContent',
 
 innerHTML = 'innerHTML',
 
@@ -215,6 +217,8 @@ namespaces = {
   // xlink: domain + '1999/xlink',
 },
 
+emitterHolders: Record<string, Emitter> = {},
+
 specialEvents: Record<string, SpecialEventHooks> = {}
 
 specialEvents[constant.EVENT_MODEL] = {
@@ -382,7 +386,9 @@ export const removeClass = removeElementClass
 
 export function on(node: HTMLElement | Window | Document, type: string, listener: Listener, context?: any): void {
 
-  const emitter: Emitter = node[EMITTER] || (node[EMITTER] = new Emitter()),
+  const emitterKey = node[EMITTER] || (node[EMITTER] = ++guid),
+
+  emitter = emitterHolders[emitterKey] || (emitterHolders[emitterKey] = new Emitter()),
 
   nativeListeners = emitter.nativeListeners || (emitter.nativeListeners = {})
 
@@ -430,7 +436,9 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
 
 export function off(node: HTMLElement | Window | Document, type: string, listener: Function): void {
 
-  const emitter: Emitter = node[EMITTER],
+  const emitterKey = node[EMITTER],
+
+  emitter = emitterHolders[emitterKey],
 
   { listeners, nativeListeners } = emitter
 
@@ -455,8 +463,11 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
 
   }
 
-  if (object.falsy(listeners)) {
+  if (emitterHolders[emitterKey]
+    && object.falsy(listeners)
+  ) {
     node[EMITTER] = constant.UNDEFINED
+    delete emitterHolders[emitterKey]
   }
 
 }
