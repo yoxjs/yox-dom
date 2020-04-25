@@ -22,7 +22,7 @@ import CustomEvent from 'yox-common/src/util/CustomEvent'
 let guid = 0,
 
 // 这里先写 IE9 支持的接口
-innerText = 'textContent',
+textContent = 'textContent',
 
 innerHTML = 'innerHTML',
 
@@ -114,8 +114,9 @@ if (process.env.NODE_ENV !== 'pure') {
 
         }
 
-        // textContent 不兼容 IE 678
-        innerText = 'innerText'
+        // textContent 不兼容 IE678
+        // 改用 data 属性
+        textContent = 'data'
 
         createEvent = function (event, element) {
           return new IEEvent(event, element)
@@ -127,7 +128,7 @@ if (process.env.NODE_ENV !== 'pure') {
             selector = string.slice(selector, 1)
           }
           else if (process.env.NODE_ENV === 'development') {
-            logger.fatal(`The id selector, such as "#id", is the only supported selector for legacy version.`)
+            logger.fatal(`The id selector, such as "#id", is the only supported selector for the legacy version.`)
           }
           const node = (constant.DOCUMENT as Document).getElementById(selector)
           if (node) {
@@ -346,15 +347,15 @@ export function text(node: Node, text?: string, isStyle?: boolean, isOption?: bo
         if (isOption) {
           (node as HTMLOptionElement).value = text as string
         }
-        node[innerText] = text as string
+        node[textContent] = text as string
       }
     }
     else {
-      node[innerText] = text as string
+      node[textContent] = text as string
     }
   }
   else {
-    return node[innerText]
+    return node[textContent]
   }
 }
 
