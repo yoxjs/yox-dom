@@ -144,9 +144,11 @@ if (process.env.NODE_ENV !== 'pure') {
               // 借用 EMITTER，反正只是内部临时用一下...
               listener[EMITTER] = function (event: any) {
                 if (event.propertyName === constant.RAW_VALUE) {
-                  event = new CustomEvent(event)
-                  event.type = constant.EVENT_INPUT
-                  execute(listener, this, event)
+                  execute(
+                    listener, 
+                    this, 
+                    new CustomEvent(constant.EVENT_INPUT, createEvent(event, node))
+                  )
                 }
               }
             )
@@ -156,9 +158,11 @@ if (process.env.NODE_ENV !== 'pure') {
               node,
               constant.EVENT_CLICK,
               listener[EMITTER] = function (event: any) {
-                event = new CustomEvent(event)
-                event.type = constant.EVENT_CHANGE
-                execute(listener, this, event)
+                execute(
+                  listener, 
+                  this, 
+                  new CustomEvent(constant.EVENT_CHANGE, createEvent(event, node))
+                )
               }
             )
           }
@@ -402,15 +406,23 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
     // 唯一的原生监听器
     nativeListener = function (event: Event | CustomEvent) {
 
-      const customEvent = event instanceof CustomEvent
-        ? event
+      const customEvent = CustomEvent.is(event)
+        ? event as CustomEvent
         : new CustomEvent(event.type, createEvent(event, node))
 
       if (customEvent.type !== type) {
         customEvent.type = type
       }
 
-      emitter.fire(type, [customEvent])
+      emitter.fire(
+        {
+          type,
+          ns: constant.EMPTY_STRING,
+        }, 
+        [
+          customEvent
+        ]
+      )
 
     }
 
@@ -428,6 +440,7 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
   emitter.on(
     type,
     {
+      ns: constant.EMPTY_STRING,
       fn: listener,
       ctx: context,
     }
@@ -444,7 +457,13 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
   { listeners, nativeListeners } = emitter
 
   // emitter 会根据 type 和 listener 参数进行适当的删除
-  emitter.off(type, listener)
+  emitter.off(
+    type,
+    {
+      ns: constant.EMPTY_STRING,
+      fn: listener,
+    }
+  )
 
   // 如果注册的 type 事件都解绑了，则去掉原生监听器
   if (nativeListeners && !emitter.has(type)) {
