@@ -3,6 +3,8 @@ node_modules
 dist
 .gitignore
 .npmignore
+jest.config.js
 package-lock.json
 yarn.lock
+tsconfig.json
 tsconfig.tsbuildinfo
