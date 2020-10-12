@@ -441,7 +441,7 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
     type,
     {
       ns: constant.EMPTY_STRING,
-      fn: listener,
+      listener,
       ctx: context,
     }
   )
@@ -461,7 +461,7 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
     type,
     {
       ns: constant.EMPTY_STRING,
-      fn: listener,
+      listener,
     }
   )
 
