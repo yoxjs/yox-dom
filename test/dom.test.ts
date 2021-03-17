@@ -319,22 +319,20 @@ test("on/off", () => {
 
   const element = domApi.createElement('div') as HTMLElement
 
-  let fired = 0, isCustomEvent = false, isClick = false, context: any
+  let fired = 0, isCustomEvent = false, isClick = false
 
   const listener = function (e: any) {
     fired++
     isCustomEvent = e instanceof CustomEvent
     isClick = e.type === 'click' && e.originalEvent.type === 'click'
-    context = this
   }
 
-  domApi.on(element, 'click', listener, listener)
+  domApi.on(element, 'click', listener)
   element.click()
 
   expect(fired).toBe(1)
   expect(isCustomEvent).toBe(true)
   expect(isClick).toBe(true)
-  expect(context).toBe(listener)
 
   domApi.off(element, 'click', listener)
   element.click()
@@ -355,23 +353,21 @@ test("addSpecialEvent", () => {
     }
   })
 
-  let fired = 0, isCustomEvent = false, isTap = false, context: any
+  let fired = 0, isCustomEvent = false, isTap = false
 
   const listener = function (e: any) {
     fired++
     isCustomEvent = e instanceof CustomEvent
     // 保留原始事件的名称
     isTap = e.type === 'tap' && e.originalEvent.type === 'click'
-    context = this
   }
 
-  domApi.on(element, 'tap', listener, listener)
+  domApi.on(element, 'tap', listener)
   element.click()
 
   expect(fired).toBe(1)
   expect(isCustomEvent).toBe(true)
   expect(isTap).toBe(true)
-  expect(context).toBe(listener)
 
   domApi.off(element, 'tap', listener)
   element.click()

@@ -15,7 +15,6 @@ import * as object from 'yox-common/src/util/object'
 import * as logger from 'yox-common/src/util/logger'
 import * as constant from 'yox-common/src/util/constant'
 
-import Emitter from 'yox-common/src/util/Emitter'
 import CustomEvent from 'yox-common/src/util/CustomEvent'
 
 
@@ -142,12 +141,10 @@ if (process.env.NODE_ENV !== 'pure') {
               node,
               PROPERTY_CHANGE,
               // 借用 EMITTER，反正只是内部临时用一下...
-              listener[EMITTER] = function (event: any) {
+              listener[EVENT] = function (event: any) {
                 if (event.propertyName === constant.RAW_VALUE) {
-                  execute(
-                    listener, 
-                    this, 
-                    new CustomEvent(constant.EVENT_INPUT, createEvent(event, node))
+                  listener(
+                    new CustomEvent(constant.EVENT_INPUT, createEvent(event, node)) as any
                   )
                 }
               }
@@ -157,11 +154,9 @@ if (process.env.NODE_ENV !== 'pure') {
             addEventListener(
               node,
               constant.EVENT_CLICK,
-              listener[EMITTER] = function (event: any) {
-                execute(
-                  listener, 
-                  this, 
-                  new CustomEvent(constant.EVENT_CHANGE, createEvent(event, node))
+              listener[EVENT] = function (event: any) {
+                listener(
+                  new CustomEvent(constant.EVENT_CHANGE, createEvent(event, node)) as any
                 )
               }
             )
@@ -173,12 +168,12 @@ if (process.env.NODE_ENV !== 'pure') {
 
         removeEventListener = function (node: any, type: string, listener: (event: Event) => void) {
           if (type === constant.EVENT_INPUT) {
-            removeEventListener(node, PROPERTY_CHANGE, listener[EMITTER])
-            delete listener[EMITTER]
+            removeEventListener(node, PROPERTY_CHANGE, listener[EVENT])
+            delete listener[EVENT]
           }
           else if (type === constant.EVENT_CHANGE && isBoxElement(node)) {
-            removeEventListener(node, constant.EVENT_CLICK, listener[EMITTER])
-            delete listener[EMITTER]
+            removeEventListener(node, constant.EVENT_CLICK, listener[EVENT])
+            delete listener[EVENT]
           }
           else {
             node.detachEvent(`on${type}`, listener)
@@ -197,7 +192,7 @@ const CHAR_WHITESPACE = ' ',
 /**
  * 绑定在 HTML 元素上的事件发射器
  */
-EMITTER = '$emitter',
+EVENT = '$event',
 
 /**
  * 低版本 IE 上 style 标签的专有属性
@@ -222,7 +217,11 @@ namespaces = {
   // xlink: domain + '1999/xlink',
 },
 
-emitterHolders: Record<string, Emitter> = {},
+nativeListenerCount: Record<number, number> = {},
+
+nativeListeners: Record<number, Record<string, NativeListener>> = {},
+
+customListeners: Record<number, Record<string, Listener[]>> = {},
 
 specialEvents: Record<string, SpecialEventHooks> = {}
 
@@ -389,16 +388,18 @@ export const addClass = addElementClass
 
 export const removeClass = removeElementClass
 
-export function on(node: HTMLElement | Window | Document, type: string, listener: Listener, context?: any): void {
+export function on(node: HTMLElement | Window | Document, type: string, listener: Listener): void {
 
-  const emitterKey = node[EMITTER] || (node[EMITTER] = ++guid),
+  const nativeKey = node[EVENT] || (node[EVENT] = ++guid),
 
-  emitter = emitterHolders[emitterKey] || (emitterHolders[emitterKey] = new Emitter()),
+  nativeListenerMap = nativeListeners[nativeKey] || (nativeListeners[nativeKey] = {}),
 
-  nativeListeners = emitter.nativeListeners || (emitter.nativeListeners = {})
+  customListenerMap = customListeners[nativeKey] || (customListeners[nativeKey] = {}),
+
+  customListenerList = customListenerMap[type] || (customListenerMap[type] = [])
 
   // 一个元素，相同的事件，只注册一个 native listener
-  if (!nativeListeners[type]) {
+  if (!nativeListenerMap[type]) {
 
     // 特殊事件
     const special = specialEvents[type],
@@ -406,27 +407,32 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
     // 唯一的原生监听器
     nativeListener = function (event: Event | CustomEvent) {
 
-      const customEvent = CustomEvent.is(event)
-        ? event as CustomEvent
-        : new CustomEvent(event.type, createEvent(event, node))
+      let customEvent: CustomEvent
 
-      if (customEvent.type !== type) {
-        customEvent.type = type
+      if (CustomEvent.is(event)) {
+        customEvent = event as CustomEvent
+        if (customEvent.type !== type) {
+          customEvent.type = type
+        }
+      }
+      else {
+        customEvent = new CustomEvent(type, createEvent(event, node))
       }
 
-      emitter.fire(
-        {
-          type,
-          ns: constant.EMPTY_STRING,
-        }, 
-        [
-          customEvent
-        ]
-      )
+      for (let i = 0, length = customListenerList.length; i < length; i++) {
+        customListenerList[i](customEvent, constant.UNDEFINED, constant.TRUE)
+      }
 
     }
 
-    nativeListeners[type] = nativeListener
+    nativeListenerMap[type] = nativeListener
+
+    if (nativeListenerCount[nativeKey]) {
+      nativeListenerCount[nativeKey]++
+    }
+    else {
+      nativeListenerCount[nativeKey] = 1
+    }
 
     if (special) {
       special.on(node, nativeListener)
@@ -437,40 +443,37 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
 
   }
 
-  emitter.on(
-    type,
-    {
-      ns: constant.EMPTY_STRING,
-      listener,
-      ctx: context,
-    }
-  )
+  customListenerList.push(listener)
 
 }
 
 export function off(node: HTMLElement | Window | Document, type: string, listener: Function): void {
 
-  const emitterKey = node[EMITTER],
+  let nativeKey = node[EVENT],
 
-  emitter = emitterHolders[emitterKey],
+  nativeListenerMap = nativeListeners[nativeKey],
 
-  { listeners, nativeListeners } = emitter
+  customListenerMap = customListeners[nativeKey],
 
-  // emitter 会根据 type 和 listener 参数进行适当的删除
-  emitter.off(
-    type,
-    {
-      ns: constant.EMPTY_STRING,
-      listener,
+  customListenerList: Listener[] | void = customListenerMap && customListenerMap[type]
+
+  if (customListenerList) {
+    array.remove(
+      customListenerList,
+      listener
+    )
+    if (!customListenerList.length) {
+      customListenerList = constant.UNDEFINED
+      delete customListenerMap[type]
     }
-  )
+  }
 
   // 如果注册的 type 事件都解绑了，则去掉原生监听器
-  if (nativeListeners && !emitter.has(type)) {
+  if (nativeListenerMap && nativeListenerMap[type] && !customListenerList) {
 
     const special = specialEvents[type],
 
-    nativeListener = nativeListeners[type]
+    nativeListener = nativeListenerMap[type]
 
     if (special) {
       special.off(node, nativeListener)
@@ -479,15 +482,18 @@ export function off(node: HTMLElement | Window | Document, type: string, listene
       removeEventListener(node, type, nativeListener)
     }
 
-    delete nativeListeners[type]
+    delete nativeListenerMap[type]
+
+    if (nativeListenerCount[nativeKey]) {
+      nativeListenerCount[nativeKey]--
+    }
 
   }
 
-  if (emitterHolders[emitterKey]
-    && object.falsy(listeners)
-  ) {
-    node[EMITTER] = constant.UNDEFINED
-    delete emitterHolders[emitterKey]
+  if (!nativeListenerCount[nativeKey]) {
+    node[EVENT] = constant.UNDEFINED
+    delete nativeListeners[nativeKey]
+    delete customListeners[nativeKey]
   }
 
 }
