@@ -7,8 +7,6 @@ import {
   SpecialEventHooks,
 } from 'yox-type/src/hooks'
 
-import execute from 'yox-common/src/function/execute'
-
 import * as array from 'yox-common/src/util/array'
 import * as string from 'yox-common/src/util/string'
 import * as object from 'yox-common/src/util/object'
@@ -267,7 +265,7 @@ export function createComment(text: string): Comment {
 
 export function prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
   if (value !== constant.UNDEFINED) {
-    object.set(node, name, value, constant.FALSE)
+    setProp(node, name, value)
   }
   else {
     const holder = object.get(node, name)
@@ -275,6 +273,10 @@ export function prop(node: HTMLElement, name: string, value?: string | number | 
       return holder.value
     }
   }
+}
+
+export function setProp(node: HTMLElement, name: string, value: string | number | boolean): string | number | boolean | void {
+  object.set(node, name, value, constant.FALSE)
 }
 
 export function removeProp(node: HTMLElement, name: string): void {
@@ -287,7 +289,7 @@ export function removeProp(node: HTMLElement, name: string): void {
 
 export function attr(node: HTMLElement, name: string, value?: string): string | void {
   if (value !== constant.UNDEFINED) {
-    node.setAttribute(name, value as string)
+    setAttr(node, name, value as string)
   }
   else {
     // value 还可能是 null
@@ -296,6 +298,10 @@ export function attr(node: HTMLElement, name: string, value?: string): string | 
       return value
     }
   }
+}
+
+export function setAttr(node: HTMLElement, name: string, value: string): string | void {
+  node.setAttribute(name, value)
 }
 
 export function removeAttr(node: HTMLElement, name: string): void {
@@ -342,45 +348,53 @@ export function tag(node: Node): string | void {
 
 export function text(node: Node, text?: string, isStyle?: boolean, isOption?: boolean): string | void {
   if (text !== constant.UNDEFINED) {
-    if (process.env.NODE_LEGACY) {
-      if (isStyle && object.has(node, STYLE_SHEET)) {
-        node[STYLE_SHEET].cssText = text
-      }
-      else {
-        if (isOption) {
-          (node as HTMLOptionElement).value = text as string
-        }
-        node[textContent] = text as string
-      }
-    }
-    else {
-      node[textContent] = text as string
-    }
+    setText(node, text, isStyle, isOption)
   }
   else {
     return node[textContent]
   }
 }
 
-export function html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
-  if (html !== constant.UNDEFINED) {
-    if (process.env.NODE_LEGACY) {
-      if (isStyle && object.has(node, STYLE_SHEET)) {
-        node[STYLE_SHEET].cssText = html
-      }
-      else {
-        if (isOption) {
-          (node as HTMLOptionElement).value = html as string
-        }
-        node[innerHTML] = html as string
-      }
+export function setText(node: Node, text: string, isStyle?: boolean, isOption?: boolean): string | void {
+  if (process.env.NODE_LEGACY) {
+    if (isStyle && object.has(node, STYLE_SHEET)) {
+      node[STYLE_SHEET].cssText = text
     }
     else {
+      if (isOption) {
+        (node as HTMLOptionElement).value = text as string
+      }
+      node[textContent] = text as string
+    }
+  }
+  else {
+    node[textContent] = text as string
+  }
+}
+
+export function html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
+  if (html !== constant.UNDEFINED) {
+    setHtml(node, html, isStyle, isOption)
+  }
+  else {
+    return node[innerHTML]
+  }
+}
+
+export function setHtml(node: Element, html: string, isStyle?: boolean, isOption?: boolean): string | void {
+  if (process.env.NODE_LEGACY) {
+    if (isStyle && object.has(node, STYLE_SHEET)) {
+      node[STYLE_SHEET].cssText = html
+    }
+    else {
+      if (isOption) {
+        (node as HTMLOptionElement).value = html as string
+      }
       node[innerHTML] = html as string
     }
   }
   else {
-    return node[innerHTML]
+    node[innerHTML] = html as string
   }
 }
 
