@@ -140,7 +140,7 @@ if (process.env.NODE_ENV !== 'pure') {
               PROPERTY_CHANGE,
               // 借用 EMITTER，反正只是内部临时用一下...
               listener[EVENT] = function (event: any) {
-                if (event.propertyName === constant.RAW_VALUE) {
+                if (event.propertyName === 'value') {
                   listener(
                     new CustomEvent(constant.EVENT_INPUT, createEvent(event, node)) as any
                   )
