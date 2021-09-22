@@ -112,8 +112,8 @@ if (process.env.NODE_ENV !== 'pure') {
         }
 
         // textContent 不兼容 IE678
-        // 改用 data 属性
-        textContent = 'data'
+        // 改用 innerText 属性
+        textContent = 'innerText'
 
         createEvent = function (event, element) {
           return new IEEvent(event, element)
