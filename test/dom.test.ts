@@ -48,30 +48,30 @@ test("prop", () => {
 
   const element = domApi.createElement('input') as HTMLInputElement
 
-  domApi.prop(element, 'type', 'number')
+  domApi.setProp(element, 'type', 'number')
 
   expect(element.type).toBe('number')
-  expect(domApi.prop(element, 'type')).toBe('number')
+  expect(domApi.getProp(element, 'type')).toBe('number')
 
-  domApi.prop(element, 'disabled', true)
+  domApi.setProp(element, 'disabled', true)
 
   expect(element.disabled).toBe(true)
-  expect(domApi.prop(element, 'disabled')).toBe(true)
+  expect(domApi.getProp(element, 'disabled')).toBe(true)
 
-  domApi.prop(element, 'width', 100)
+  domApi.setProp(element, 'width', 100)
 
   expect(element.width).toBe(100)
-  expect(domApi.prop(element, 'width')).toBe(100)
+  expect(domApi.getProp(element, 'width')).toBe(100)
 
-  domApi.prop(element, 'xxx', 100)
+  domApi.setProp(element, 'xxx', 100)
 
   expect(element['xxx']).toBe(100)
-  expect(domApi.prop(element, 'xxx')).toBe(100)
+  expect(domApi.getProp(element, 'xxx')).toBe(100)
 
-  domApi.prop(element, 'yyy', true)
+  domApi.setProp(element, 'yyy', true)
 
   expect(element['yyy']).toBe(true)
-  expect(domApi.prop(element, 'yyy')).toBe(true)
+  expect(domApi.getProp(element, 'yyy')).toBe(true)
 
 })
 
@@ -79,69 +79,69 @@ test("removeProp", () => {
 
   const element = domApi.createElement('input') as HTMLInputElement
 
-  domApi.prop(element, 'type', 'number')
+  domApi.setProp(element, 'type', 'number')
 
   expect(element.type).toBe('number')
-  expect(domApi.prop(element, 'type')).toBe('number')
+  expect(domApi.getProp(element, 'type')).toBe('number')
 
   domApi.removeProp(element, 'type')
-  expect(element.type).toBe(domApi.prop(element, 'type'))
+  expect(element.type).toBe(domApi.getProp(element, 'type'))
   expect(element.type).not.toBe('number')
 
 
 
 
-  domApi.prop(element, 'disabled', true)
+  domApi.setProp(element, 'disabled', true)
 
   expect(element.disabled).toBe(true)
-  expect(domApi.prop(element, 'disabled')).toBe(true)
+  expect(domApi.getProp(element, 'disabled')).toBe(true)
 
   domApi.removeProp(element, 'disabled')
-  expect(element.disabled).toBe(domApi.prop(element, 'disabled'))
+  expect(element.disabled).toBe(domApi.getProp(element, 'disabled'))
   expect(element.disabled).toBe(false)
 
 
 
-  domApi.prop(element, 'width', 100)
+  domApi.setProp(element, 'width', 100)
 
   expect(element.width).toBe(100)
-  expect(domApi.prop(element, 'width')).toBe(100)
+  expect(domApi.getProp(element, 'width')).toBe(100)
 
   domApi.removeProp(element, 'width')
-  expect(element.width).toBe(domApi.prop(element, 'width'))
+  expect(element.width).toBe(domApi.getProp(element, 'width'))
   expect(element.width).toBe(undefined)
 
 
 
-  domApi.prop(element, 'xxx', 100)
+  domApi.setProp(element, 'xxx', 100)
 
   expect(element['xxx']).toBe(100)
-  expect(domApi.prop(element, 'xxx')).toBe(100)
+  expect(domApi.getProp(element, 'xxx')).toBe(100)
 
   domApi.removeProp(element, 'xxx')
-  expect(element['xxx']).toBe(domApi.prop(element, 'xxx'))
+  expect(element['xxx']).toBe(domApi.getProp(element, 'xxx'))
   expect(element['xxx']).toBe(undefined)
 
 
-  domApi.prop(element, 'yyy', true)
+  domApi.setProp(element, 'yyy', true)
 
   expect(element['yyy']).toBe(true)
-  expect(domApi.prop(element, 'yyy')).toBe(true)
+  expect(domApi.getProp(element, 'yyy')).toBe(true)
 
   domApi.removeProp(element, 'yyy')
-  expect(element['yyy']).toBe(domApi.prop(element, 'yyy'))
+  expect(element['yyy']).toBe(domApi.getProp(element, 'yyy'))
   expect(element['yyy']).toBe(undefined)
 
 
 
 
-  domApi.prop(element, 'zzz', '123')
+  domApi.setProp(element, 'zzz', '123')
 
   expect(element['zzz']).toBe('123')
-  expect(domApi.prop(element, 'zzz')).toBe('123')
+  expect(domApi.getProp(element, 'zzz')).toBe('123')
 
   domApi.removeProp(element, 'zzz')
-  expect(element['zzz']).toBe(domApi.prop(element, 'zzz'))
+  expect(element['zzz']).toBe(domApi.getProp(element, 'zzz'))
   expect(element['zzz']).toBe(undefined)
 
 })
@@ -150,15 +150,15 @@ test("attr", () => {
 
   const element = domApi.createElement('input') as HTMLInputElement
 
-  domApi.attr(element, 'type', 'number')
+  domApi.setAttr(element, 'type', 'number')
 
   expect(element.getAttribute('type')).toBe('number')
-  expect(domApi.attr(element, 'type')).toBe('number')
+  expect(domApi.getAttr(element, 'type')).toBe('number')
 
-  domApi.attr(element, 'data-type', 'xxx')
+  domApi.setAttr(element, 'data-type', 'xxx')
 
   expect(element.getAttribute('data-type')).toBe('xxx')
-  expect(domApi.attr(element, 'data-type')).toBe('xxx')
+  expect(domApi.getAttr(element, 'data-type')).toBe('xxx')
 
 })
 
@@ -166,21 +166,21 @@ test("removeAttr", () => {
 
   const element = domApi.createElement('input') as HTMLInputElement
 
-  domApi.attr(element, 'type', 'number')
+  domApi.setAttr(element, 'type', 'number')
 
   expect(element.getAttribute('type')).toBe('number')
-  expect(domApi.attr(element, 'type')).toBe('number')
+  expect(domApi.getAttr(element, 'type')).toBe('number')
 
   domApi.removeAttr(element, 'type')
-  expect(domApi.attr(element, 'type')).toBe(undefined)
+  expect(domApi.getAttr(element, 'type')).toBe(undefined)
 
-  domApi.attr(element, 'data-type', 'xxx')
+  domApi.setAttr(element, 'data-type', 'xxx')
 
   expect(element.getAttribute('data-type')).toBe('xxx')
-  expect(domApi.attr(element, 'data-type')).toBe('xxx')
+  expect(domApi.getAttr(element, 'data-type')).toBe('xxx')
 
   domApi.removeAttr(element, 'x-type')
-  expect(domApi.attr(element, 'x-type')).toBe(undefined)
+  expect(domApi.getAttr(element, 'x-type')).toBe(undefined)
 })
 
 test("before/append/replace/remove", () => {

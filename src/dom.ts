@@ -23,6 +23,8 @@ textContent = 'textContent',
 
 innerHTML = 'innerHTML',
 
+cssFloat = 'cssFloat',
+
 createEvent = function (event: any, node: HTMLElement | Window | Document): any {
   return event
 },
@@ -53,6 +55,14 @@ removeElementClass = function (node: HTMLElement, className: string) {
 
 if (process.env.NODE_ENV !== 'pure') {
   if (constant.DOCUMENT) {
+
+    let testElement: HTMLElement | void = constant.DOCUMENT.body
+
+    if (!(cssFloat in testElement.style)) {
+      cssFloat = 'styleFloat'
+    }
+
+    testElement = constant.UNDEFINED
 
     // 此时 document.body 不一定有值，比如 script 放在 head 里
     if (!constant.DOCUMENT.documentElement.classList) {
@@ -263,49 +273,49 @@ export function createComment(text: string): Comment {
   return (constant.DOCUMENT as Document).createComment(text)
 }
 
-export function prop(node: HTMLElement, name: string, value?: string | number | boolean): string | number | boolean | void {
-  if (value !== constant.UNDEFINED) {
-    setProp(node, name, value)
-  }
-  else {
-    const holder = object.get(node, name)
-    if (holder) {
-      return holder.value
-    }
-  }
+export function getProp(node: HTMLElement, name: string): string | number | boolean | void {
+  return node[name]
 }
 
-export function setProp(node: HTMLElement, name: string, value: string | number | boolean): string | number | boolean | void {
-  object.set(node, name, value, constant.FALSE)
+export function setProp(node: HTMLElement, name: string, value: string | number | boolean): void {
+  node[name] = value
 }
 
 export function removeProp(node: HTMLElement, name: string): void {
-  object.set(
-    node,
-    name,
-    constant.UNDEFINED
-  )
+  node[name] = constant.UNDEFINED
 }
 
-export function attr(node: HTMLElement, name: string, value?: string): string | void {
-  if (value !== constant.UNDEFINED) {
-    setAttr(node, name, value as string)
-  }
-  else {
-    // value 还可能是 null
-    const value = node.getAttribute(name)
-    if (value != constant.NULL) {
-      return value
-    }
+export function getAttr(node: HTMLElement, name: string): string | void {
+  const value = node.getAttribute(name)
+  if (value != constant.NULL) {
+    return value
   }
 }
 
-export function setAttr(node: HTMLElement, name: string, value: string): string | void {
+export function setAttr(node: HTMLElement, name: string, value: string): void {
   node.setAttribute(name, value)
 }
 
 export function removeAttr(node: HTMLElement, name: string): void {
   node.removeAttribute(name)
+}
+
+// 这里不传 HTMLElement 是因为外面会在循环里调用，频繁读取 node.style 挺浪费性能的
+export function setStyle(style: CSSStyleDeclaration, name: string, value: string | number | void) {
+  if (value == constant.NULL) {
+    style[name] = constant.EMPTY_STRING
+    return
+  }
+  if (name === 'float') {
+    style[cssFloat] = value
+    return
+  }
+  style[name] = value
+}
+
+// 这里不传 HTMLElement 是因为外面会在循环里调用，频繁读取 node.style 挺浪费性能的
+export function removeStyle(style: CSSStyleDeclaration, name: string) {
+  style[name] = constant.EMPTY_STRING
 }
 
 export function before(parentNode: Node, node: Node, beforeNode: Node): void {
