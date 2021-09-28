@@ -306,11 +306,7 @@ export function setStyle(style: CSSStyleDeclaration, name: string, value: string
     style[name] = constant.EMPTY_STRING
     return
   }
-  if (name === 'float') {
-    style[cssFloat] = value
-    return
-  }
-  style[name] = value
+  style[name === 'float' ? cssFloat : name] = value
 }
 
 // 这里不传 HTMLElement 是因为外面会在循环里调用，频繁读取 node.style 挺浪费性能的
