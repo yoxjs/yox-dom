@@ -56,16 +56,14 @@ removeElementClass = function (node: HTMLElement, className: string) {
 if (process.env.NODE_ENV !== 'pure') {
   if (constant.DOCUMENT) {
 
-    let testElement: HTMLElement | void = constant.DOCUMENT.body
+    // 此时 document.body 不一定有值，比如 script 放在 head 里
+    let testElement: HTMLElement | void = constant.DOCUMENT.documentElement
 
     if (!(cssFloat in testElement.style)) {
       cssFloat = 'styleFloat'
     }
 
-    testElement = constant.UNDEFINED
-
-    // 此时 document.body 不一定有值，比如 script 放在 head 里
-    if (!constant.DOCUMENT.documentElement.classList) {
+    if (!testElement.classList) {
       addElementClass = function (node: HTMLElement, className: string) {
         const classes = node.className.split(CHAR_WHITESPACE)
         if (!array.has(classes, className)) {
@@ -84,7 +82,7 @@ if (process.env.NODE_ENV !== 'pure') {
     // 为 IE9 以下浏览器打补丁
     if (process.env.NODE_LEGACY) {
 
-      if (!constant.DOCUMENT.addEventListener) {
+      if (!testElement.addEventListener) {
 
         const PROPERTY_CHANGE = 'propertychange',
 
@@ -191,6 +189,8 @@ if (process.env.NODE_ENV !== 'pure') {
       }
 
     }
+
+    testElement = constant.UNDEFINED
 
   }
 }
