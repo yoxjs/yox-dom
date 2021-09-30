@@ -277,14 +277,14 @@ test("text/html", () => {
   `
   const element = domApi.find('#app') as HTMLElement
 
-  domApi.text(element, '<i>123</i>')
+  domApi.setText(element, '<i>123</i>')
   expect(element.innerHTML).toBe('&lt;i&gt;123&lt;/i&gt;')
-  expect(domApi.text(element)).toBe('<i>123</i>')
-  expect(domApi.text(element)).not.toBe(domApi.html(element))
+  expect(domApi.getText(element)).toBe('<i>123</i>')
+  expect(domApi.getText(element)).not.toBe(domApi.getHtml(element))
 
-  domApi.html(element, '<i>123</i>')
+  domApi.setHtml(element, '<i>123</i>')
   expect(element.innerHTML).toBe('<i>123</i>')
-  expect(domApi.html(element)).toBe('<i>123</i>')
+  expect(domApi.getHtml(element)).toBe('<i>123</i>')
 
 })
 

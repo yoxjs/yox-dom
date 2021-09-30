@@ -352,16 +352,11 @@ export function tag(node: Node): string | void {
   }
 }
 
-export function text(node: Node, text?: string, isStyle?: boolean, isOption?: boolean): string | void {
-  if (text !== constant.UNDEFINED) {
-    setText(node, text, isStyle, isOption)
-  }
-  else {
-    return node[textContent]
-  }
+export function getText(node: Node): string | void {
+  return node[textContent]
 }
 
-export function setText(node: Node, text: string, isStyle?: boolean, isOption?: boolean): string | void {
+export function setText(node: Node, text: string, isStyle?: boolean, isOption?: boolean): void {
   if (process.env.NODE_LEGACY) {
     if (isStyle && object.has(node, STYLE_SHEET)) {
       node[STYLE_SHEET].cssText = text
@@ -378,16 +373,11 @@ export function setText(node: Node, text: string, isStyle?: boolean, isOption?: 
   }
 }
 
-export function html(node: Element, html?: string, isStyle?: boolean, isOption?: boolean): string | void {
-  if (html !== constant.UNDEFINED) {
-    setHtml(node, html, isStyle, isOption)
-  }
-  else {
-    return node[innerHTML]
-  }
+export function getHtml(node: Element): string | void {
+  return node[innerHTML]
 }
 
-export function setHtml(node: Element, html: string, isStyle?: boolean, isOption?: boolean): string | void {
+export function setHtml(node: Element, html: string, isStyle?: boolean, isOption?: boolean): void {
   if (process.env.NODE_LEGACY) {
     if (isStyle && object.has(node, STYLE_SHEET)) {
       node[STYLE_SHEET].cssText = html
