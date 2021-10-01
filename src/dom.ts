@@ -259,6 +259,10 @@ specialEvents[constant.EVENT_MODEL] = {
   }
 }
 
+export function getBodyElement() {
+  return (constant.DOCUMENT as Document).body
+}
+
 export function createElement(tag: string, isSvg?: boolean): Element {
   return isSvg
     ? (constant.DOCUMENT as Document).createElementNS(namespaces.svg, tag)
