@@ -433,8 +433,11 @@ export function on(node: HTMLElement | Window | Document, type: string, listener
         customEvent = new CustomEvent(type, createEvent(event, node))
       }
 
-      for (let i = 0, length = customListenerList.length; i < length; i++) {
-        customListenerList[i](customEvent, constant.UNDEFINED, constant.TRUE)
+      // 避免遍历过程中，数组发生变化，比如增删了
+      const listenerList = customListenerList.slice()
+
+      for (let i = 0, length = listenerList.length; i < length; i++) {
+        listenerList[i](customEvent, constant.UNDEFINED, constant.TRUE)
       }
 
     }
