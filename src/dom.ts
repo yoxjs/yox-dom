@@ -277,18 +277,6 @@ export function createComment(text: string): Comment {
   return (constant.DOCUMENT as Document).createComment(text)
 }
 
-export function getProp(node: HTMLElement, name: string): string | number | boolean | void {
-  return node[name]
-}
-
-export function setProp(node: HTMLElement, name: string, value: string | number | boolean): void {
-  node[name] = value
-}
-
-export function removeProp(node: HTMLElement, name: string): void {
-  node[name] = constant.UNDEFINED
-}
-
 export function getAttr(node: HTMLElement, name: string): string | void {
   const value = node.getAttribute(name)
   if (value != constant.NULL) {
@@ -296,8 +284,13 @@ export function getAttr(node: HTMLElement, name: string): string | void {
   }
 }
 
-export function setAttr(node: HTMLElement, name: string, value: string): void {
-  node.setAttribute(name, value)
+export function setAttr(node: HTMLElement, name: string, value: string | void): void {
+  if (value === constant.UNDEFINED) {
+    node.removeAttribute(name)
+  }
+  else {
+    node.setAttribute(name, value)
+  }
 }
 
 export function removeAttr(node: HTMLElement, name: string): void {
