@@ -19,8 +19,13 @@ import CustomEvent from 'yox-common/src/util/CustomEvent'
 let guid = 0,
 
 // 这里先写 IE9 支持的接口
+// 文本或注释节点设置内容的属性
 textContent = 'textContent',
 
+// 元素节点设置 text 的属性
+innerText = textContent,
+
+// 元素节点设置 html 的属性
 innerHTML = 'innerHTML',
 
 cssFloat = 'cssFloat',
@@ -119,9 +124,9 @@ if (process.env.NODE_ENV !== 'pure') {
 
         }
 
-        // textContent 不兼容 IE678
-        // 改用 innerText 属性
-        textContent = 'innerText'
+        // 兼容 IE678
+        textContent = 'nodeValue'
+        innerText = 'innerText'
 
         createEvent = function (event, element) {
           return new IEEvent(event, element)
@@ -344,51 +349,55 @@ export function next(node: Node): Node | void {
 export const find = findElement
 
 export function tag(node: Node): string | void {
-  if (node.nodeType === 1) {
+  if (node.nodeType === constant.NODE_TYPE_ELEMENT) {
     return string.lower((node as HTMLElement).tagName)
   }
 }
 
-export function getText(node: Node): string | void {
+export function getNodeText(node: Node): string | void {
   return node[textContent]
 }
 
-export function setText(node: Node, text: string, isStyle?: boolean, isOption?: boolean): void {
+export function setNodeText(node: Node, text: string): void {
+  node[textContent] = text
+}
+
+export function getElementText(node: Element): string | void {
   if (process.env.NODE_LEGACY) {
-    if (isStyle && object.has(node, STYLE_SHEET)) {
+    if (tag(node) === 'style' && object.has(node, STYLE_SHEET)) {
+      return node[STYLE_SHEET].cssText
+    }
+  }
+  return node[innerText]
+}
+
+export function setElementText(node: Element, text: string): void {
+  if (process.env.NODE_LEGACY) {
+    if (tag(node) === 'style' && object.has(node, STYLE_SHEET)) {
       node[STYLE_SHEET].cssText = text
-    }
-    else {
-      if (isOption) {
-        (node as HTMLOptionElement).value = text as string
-      }
-      node[textContent] = text as string
+      return
     }
   }
-  else {
-    node[textContent] = text as string
-  }
+  node[innerText] = text
 }
 
 export function getHtml(node: Element): string | void {
+  if (process.env.NODE_LEGACY) {
+    if (tag(node) === 'style' && object.has(node, STYLE_SHEET)) {
+      return node[STYLE_SHEET].cssText
+    }
+  }
   return node[innerHTML]
 }
 
-export function setHtml(node: Element, html: string, isStyle?: boolean, isOption?: boolean): void {
+export function setHtml(node: Element, html: string): void {
   if (process.env.NODE_LEGACY) {
-    if (isStyle && object.has(node, STYLE_SHEET)) {
+    if (tag(node) === 'style' && object.has(node, STYLE_SHEET)) {
       node[STYLE_SHEET].cssText = html
-    }
-    else {
-      if (isOption) {
-        (node as HTMLOptionElement).value = html as string
-      }
-      node[innerHTML] = html as string
+      return
     }
   }
-  else {
-    node[innerHTML] = html as string
-  }
+  node[innerHTML] = html
 }
 
 export const addClass = addElementClass
